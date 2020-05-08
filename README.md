@@ -6,7 +6,7 @@ Square is a powerful programming language.
 * ...(TODO)
 ## How to run
 ```
-$ cd bin
+$ cd src
 $ ./a.exe ../examples/helloworld.squ
 ```
 #### Note:Square doesn't work yet, but you can check its syntax.
@@ -23,5 +23,4 @@ MIT license 2020 Stepfen Shawn
 ## The Author
 Square was designed and developed by Stepfen Shawn in 2020.
 #### Email:    
-stepfencurryxiao@gmail.com  or  
-m18824909883@163.com
+stepfencurryxiao@gmail.com
