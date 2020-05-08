@@ -15,6 +15,7 @@
 /*********************************************/
 
 %{
+
 #define YYDEBUG 1
 #define YYERROR_VERBOSE 1
 
@@ -48,7 +49,7 @@ typedef enum{
   INCOMMENT,
   INNUM,
   INID,
-  INSTR,     /*TODO: support string type*/
+  INSTR,
   FINISH,
 }StateType;
 
@@ -642,8 +643,8 @@ static void
 yyerror(parser_state *p, const char *s)
 {
   p->nerr++;
-  if (p->fname) {
-    fprintf(stderr, "%s:%d:%s\n", p->fname, p->lineno, s);
+  if (p->file_name) {
+    fprintf(stderr, "%s:%d:%s\n", p->file_name, p->lineno, s);
   }
   else {
     fprintf(stderr, "%s\n", s);
@@ -736,6 +737,9 @@ TokenType getToken(){
            save = FALSE;
            state = INCOMMENT;
         }
+        else if(c == '\"'){
+          state = INSTR;
+        }
         else
         {
           state = FINISH;
@@ -823,6 +827,18 @@ TokenType getToken(){
           state = FINISH;
           result = identifier;
         }
+      break;
+      case INSTR:
+       if(c == '"')
+       {
+         ungetNextChar();
+         save = FALSE;
+         state = FINISH;
+         result = lit_string;
+       }
+       else{
+         getNextChar();
+       }
       break;
       case FINISH:
       default:

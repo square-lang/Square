@@ -272,7 +272,7 @@ node_ident_of(char* s)
 node*
 node_null()
 {
-  static node nd = { NODE_VALUE, { SQU_VALUE_NIL, {0} } };
+  static node nd = { NODE_VALUE, { SQU_VALUE_NULL, {0} } };
   return &nd;
 }
 
@@ -342,7 +342,7 @@ squ_parse_init(parser_state *p)
 {
   p->nerr = 0;
   p->lval = NULL;
-  p->fname = NULL;
+  p->file_name = NULL;
   p->lineno = 1;
   p->tline = 1;
   p->ctx.exc = NULL;
@@ -351,21 +351,21 @@ squ_parse_init(parser_state *p)
 }
 
 int
-squ_parse_file(parser_state* p, const char* fname)
+squ_parse_file(parser_state* p, const char* file_name)
 {
   int r;
-  FILE* fp = fopen(fname, "rb");
+  FILE* fp = fopen(file_name, "rb");
   if (fp == NULL) {
     perror("fopen");
     return 1;
   }
-  r = squ_parse_input(p, fp, fname);
+  r = squ_parse_input(p, fp, file_name);
   fclose(fp);
   return r;
 }
 
 int
-squ_parse_input(parser_state* p, FILE *f, const char *fname)
+squ_parse_input(parser_state* p, FILE *f, const char *file_name)
 {
   int n;
 
@@ -437,7 +437,7 @@ node_free(node* np) {
       break;
     case SQU_VALUE_BOOL:
       break;
-    case SQU_VALUE_NIL:
+    case SQU_VALUE_NULL:
       break;
     case SQU_VALUE_ARRAY:
       node_array_free(np);

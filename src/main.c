@@ -79,7 +79,7 @@ dump_node(node* np, int indent) {
     case SQU_VALUE_BOOL:
       printf("VALUE(BOOL): %s\n", np->value.v.i ? "true" : "false");
       break;
-    case SQU_VALUE_NIL:
+    case SQU_VALUE_NULL:
       printf("VALUE(NIL): null\n");
       break;
     case SQU_VALUE_ARRAY:
@@ -133,6 +133,7 @@ main(int argc, const char** argv)
   if (n == 0) {
     //dump_node(state.lval, 0);
   }
+
   squ_parse_free(&state);
   return n > 0 ? EXIT_FAILURE : EXIT_SUCCESS;
 }

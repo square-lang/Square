@@ -4,40 +4,43 @@
 #include <stdint.h>
 #include "khash.h"
 
-typedef enum {
-  SQU_VALUE_BOOL,
-  SQU_VALUE_ARRAY,
-  SQU_VALUE_MAP,
-  SQU_VALUE_STRING,
-  SQU_VALUE_DOUBLE,
-  SQU_VALUE_FIXNUM,
-  SQU_VALUE_NIL,
-  SQU_VALUE_CFUNC,
-  SQU_VALUE_USER,
-  SQU_VALUE_ERROR,
+typedef enum{
+  SQU_VALUE_BOOL,          /* bool */
+  SQU_VALUE_ARRAY,         /* array */
+  SQU_VALUE_MAP,           /* map */
+  SQU_VALUE_STRING,        /* string */
+  SQU_VALUE_DOUBLE,        /* double */
+  SQU_VALUE_FIXNUM,        /* fix number */        
+  SQU_VALUE_NULL,          /* null */
+  SQU_VALUE_CFUNC,         /* funtion */
+  SQU_VALUE_USER,          /* user data */
+  SQU_VALUE_ERROR,         /* error */
 } squ_value_type;
 
+/* define data type in square */
 typedef intptr_t squ_id;
+typedef int squ_bool;
 typedef double squ_double;
 typedef char* squ_string;
 
 typedef struct {
-  squ_value_type t;
-  union {
-    int b;
-    int i;
-    double d;
-    char* s;
-    void* p;
-    squ_id id;
-  } v;
-} squ_value;
-
-typedef struct {
-  int len;
+  int len;       /*length of the array*/
   int max;
   void** data;
 } squ_array;
+
+/* "Value" in square, include its type and value */
+typedef struct {
+  squ_value_type t;
+  union {
+    int b;       /* bool */
+    int i;       /* int */
+    double d;    /* double */
+    char* s;     /* string */
+    void* p;     /* point */
+    squ_id id;   /* identifier */
+  } v;
+} squ_value;
 
 KHASH_MAP_INIT_STR(value, squ_value*)
 
@@ -56,10 +59,9 @@ typedef struct {
 typedef struct parser_state {
   int nerr;
   void *lval;
-  const char *fname;
+  const char *file_name;
   int lineno;
   int tline;
-  /* TODO: should be separated as another context structure */
   squ_ctx ctx;
 } parser_state;
 
@@ -73,4 +75,4 @@ int squ_parse_string(parser_state*, const char*);
 int squ_run(parser_state*);
 void squ_raise(squ_ctx*, const char*);
 
-#endif /* _SQU_H_ */
+#endif
