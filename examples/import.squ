@@ -1,0 +1,4 @@
+import io              # import the io module#      
+read("data.csv")  ->   # read the file #
+do()              ->   # do something #
+cat("data.csv)         # print the file #
