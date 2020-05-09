@@ -1,4 +1,5 @@
 /*********************************************/
+/**                                          */
 /** parse.y - square's lexical and parser    */
 /**                                          */
 /** How to complie:                          */
@@ -12,6 +13,7 @@
 /** Created at Apr 25 00:27:34 2020          */
 /**                                          */
 /** Copyright (c) 2020 Stepfen Shawn         */
+/**                                          */
 /*********************************************/
 
 %{
@@ -55,7 +57,7 @@ typedef enum{
   FINISH,      /* end */
 }StateType;
 
-#define MAXTOKENLEN 40
+#define MAXTOKENLEN 80
 
 #define MAXRESERVED 10
 
@@ -68,7 +70,7 @@ int lineno = 0;
 static char lineBuf[BUFLEN]; /* holds the current line */
 static int linepos = 0; /* current position in LineBuf */
 static int bufsize = 0; /* current size of buffer string */
-static int EOF_flag = FALSE; /* corrects ungetNextChar behavior on EOF */
+static BOOL EOF_flag = FALSE; /* corrects ungetNextChar behavior on EOF */
 
 #define YYLEX_DECL() yylex(YYSTYPE *yylval)
 
@@ -166,11 +168,17 @@ void List_Append(STRList* list, int value);
       map 
       map_args 
       bparam
+
 %type <nd> 
       opt_else 
       opt_elsif
+
 %type <id> 
       identifier
+
+%type <nd>
+      lit_number
+      lit_string
 
 %pure-parser
 %parse-param {parser_state *p}
@@ -515,12 +523,12 @@ grade           : /* none */
 
 primary0        : lit_number
                     {
-                      $$ = $<nd>1;
+                        $$ = $1;
                     }
                 | lit_string
                     {
-                      $$ = $<nd>1;
-					          }
+                        $$ = $1;
+                    }
                 | identifier
                     {
                       $$ = node_ident_new($1);
@@ -767,8 +775,8 @@ List_Init(STRList *list) {
 /* Add a value to the string list */
 void 
 List_Append(STRList* list, int value) {
-    list->stringtable[list->n] = value;
-    list->n++;
+  list -> n++;
+  list->stringtable[list->n] = (squ_string)value;
 }
 
 
@@ -779,7 +787,7 @@ TokenType getToken(YYSTYPE* yylval){
   StateType state = BEGIN;
   BOOL save;
   int yyleng;
-  STRList* List;
+  STRList* str_list = (STRList*)malloc(sizeof(STRList));
   while(state != FINISH)
   {
     c = getNextChar();
@@ -803,8 +811,8 @@ TokenType getToken(YYSTYPE* yylval){
         }
         else if(c == '\"'){
           state = INSTR;
+          List_Init(str_list);
           yyleng = 0;
-          List = (STRList*)malloc(sizeof(STRList));
         }
         else
         {
@@ -875,6 +883,7 @@ TokenType getToken(YYSTYPE* yylval){
         }
       break;
       case INASSIGN:
+        state = FINISH;
         if(c == '='){
           result = op_assign;
         }
@@ -889,8 +898,8 @@ TokenType getToken(YYSTYPE* yylval){
         {
           ungetNextChar();
           save = FALSE;
-          result = lit_number;
           state = FINISH;
+          result = lit_number;
         }
       break;
       case INID:
@@ -898,21 +907,25 @@ TokenType getToken(YYSTYPE* yylval){
         {
           ungetNextChar();
           save = FALSE;
-          result = identifier;
           state = FINISH;
+          result = identifier;
         }
       break;
       case INSTR:
-       if(c == '\"')
-       {
-         ungetNextChar();
-         save = FALSE;
-         result = lit_string;
-         state = FINISH;
-       }
-       else{
-        yyleng++;
-       }
+        if(c != '\"')
+        {
+          List_Append(str_list,c);
+          ++yyleng;
+        }
+        else
+        {
+          ungetNextChar();
+          save = FALSE;
+          state = FINISH;
+          squ_string s = str_list -> stringtable;
+          free(str_list);
+          result = lit_string;
+        }
       break;
       case FINISH:
       default:
