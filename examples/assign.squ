@@ -1,0 +1,9 @@
+# Try: int type #
+a := 0
+# Try: bool type #
+b := false
+# Try: null #
+c := null
+# Try: String #
+# Can not run string yet  #
+# S := "String" #
