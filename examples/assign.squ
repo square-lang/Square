@@ -1,5 +1,5 @@
 # Try: int type #
-a := 26 
+a := 26
 # Try: bool type #
 b := false
 # Try: null #

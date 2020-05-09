@@ -63,7 +63,7 @@ squ_array_add(squ_array* arr, void* data)
     arr->max = arr->len + 10;
     arr->data = realloc(arr->data, sizeof(void*) * arr->max);
   }
-  /* TODO: error check */
+
   arr->data[arr->len] = data;
   arr->len++;
 }
@@ -71,8 +71,12 @@ squ_array_add(squ_array* arr, void* data)
 node*
 node_array_new()
 {
-  /* TODO: error check */
+
   node* np = malloc(sizeof(node));
+  if(!(np = malloc(sizeof(node))))
+  {
+    printf("could not malloc for node_array area\n");
+  }
   np->type = NODE_VALUE;
   np->value.t = SQU_VALUE_ARRAY;
   np->value.v.p = squ_array_new();

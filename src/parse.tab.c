@@ -63,7 +63,7 @@
 
 /* Copy the first part of user declarations.  */
 /* Line 371 of yacc.c  */
-#line 19 "parse.y"
+#line 36 "parse.y"
 
 
 #define YYDEBUG 1
@@ -95,7 +95,8 @@ extern int yydebug;
 #endif
 
 /* State type in Lexcial */
-typedef enum{
+typedef enum
+{
   BEGIN,       /* start */
   INASSIGN,    /* assign */
   INCOMMENT,   /* comment */
@@ -121,6 +122,40 @@ static int bufsize = 0; /* current size of buffer string */
 static BOOL EOF_flag = FALSE; /* corrects ungetNextChar behavior on EOF */
 
 #define YYLEX_DECL() yylex(YYSTYPE *yylval)
+
+static char*
+strdup_(const char *str)
+{
+    //Space for length plus nul
+    char *new_str = malloc(strlen (str) + 1);  
+    // No memory
+    if (new_str == NULL)
+        return NULL;
+    //Copy the characters          
+    strcpy(new_str, str);       
+    //Return the new string               
+    return new_str;                            
+}
+
+
+static char*
+strndup_(const char *str, size_t chars)
+{
+    char* buffer;
+    size_t n;
+
+    buffer = (char *)malloc(chars + 1);
+    if(buffer)
+    {
+        for (n = 0;((n < chars) && (str[n] != 0));n++)
+        {
+          buffer[n] = str[n];
+        }
+        buffer[n] = 0;
+    }
+
+    return buffer;
+}
 
 /*
 **  In parse.tab.h:
@@ -170,7 +205,8 @@ static BOOL EOF_flag = FALSE; /* corrects ungetNextChar behavior on EOF */
 
 /* define the string list */
 /* use list to save the string value */
-typedef struct{
+typedef struct
+{
     squ_string stringtable;
     size_t n;
 }STRList;
@@ -181,7 +217,7 @@ void List_Append(STRList* list, int value);
 
 
 /* Line 371 of yacc.c  */
-#line 185 "parse.tab.c"
+#line 221 "parse.tab.c"
 
 # ifndef YY_NULL
 #  if defined __cplusplus && 201103L <= __cplusplus
@@ -262,7 +298,7 @@ extern int yydebug;
 typedef union YYSTYPE
 {
 /* Line 387 of yacc.c  */
-#line 138 "parse.y"
+#line 191 "parse.y"
 
   node* nd;
   squ_id id;
@@ -273,7 +309,7 @@ typedef union YYSTYPE
 
 
 /* Line 387 of yacc.c  */
-#line 277 "parse.tab.c"
+#line 313 "parse.tab.c"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
@@ -299,14 +335,15 @@ int yyparse ();
 
 /* Copy the second part of user declarations.  */
 /* Line 390 of yacc.c  */
-#line 186 "parse.y"
+#line 239 "parse.y"
 
 static int yylex(YYSTYPE *lval);
-static void yyerror(parser_state *p, const char *s);
-static int yywarp();
+static void yyerror(parser_state* p, const char* s);
+static int yywarp(void);
+static void yywarnning(parser_state* p,const char* s);
 
 /* Line 390 of yacc.c  */
-#line 310 "parse.tab.c"
+#line 347 "parse.tab.c"
 
 #ifdef short
 # undef short
@@ -641,17 +678,17 @@ static const yytype_int8 yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,   256,   256,   262,   266,   269,   274,   279,   284,   288,
-     292,   296,   297,   301,   305,   308,   314,   318,   322,   326,
-     330,   334,   338,   342,   346,   350,   354,   358,   362,   366,
-     370,   374,   378,   382,   386,   390,   396,   400,   404,   408,
-     412,   416,   420,   424,   428,   432,   436,   440,   444,   448,
-     452,   456,   460,   464,   468,   472,   479,   482,   488,   492,
-     499,   502,   508,   513,   520,   521,   524,   528,   532,   536,
-     540,   544,   548,   552,   556,   560,   564,   568,   574,   578,
-     582,   586,   592,   593,   597,   601,   605,   609,   615,   619,
-     625,   630,   638,   641,   647,   651,   657,   661,   667,   672,
-     679,   682,   683,   684,   687,   688,   689,   690
+       0,   310,   310,   316,   320,   323,   328,   333,   338,   342,
+     346,   350,   351,   355,   359,   362,   368,   372,   376,   380,
+     384,   388,   392,   396,   400,   404,   408,   412,   416,   420,
+     424,   428,   432,   436,   440,   444,   450,   454,   458,   462,
+     466,   470,   474,   478,   482,   486,   490,   494,   498,   502,
+     506,   510,   514,   518,   522,   526,   533,   536,   542,   546,
+     553,   556,   562,   567,   574,   575,   578,   582,   586,   590,
+     594,   598,   602,   606,   610,   614,   618,   622,   628,   632,
+     636,   640,   646,   647,   651,   655,   659,   663,   669,   673,
+     679,   684,   692,   695,   701,   705,   711,   715,   721,   726,
+     733,   736,   737,   738,   741,   742,   743,   744
 };
 #endif
 
@@ -1794,7 +1831,7 @@ yyreduce:
     {
         case 2:
 /* Line 1792 of yacc.c  */
-#line 257 "parse.y"
+#line 311 "parse.y"
     { 
                       p->lval = (yyvsp[(1) - (1)].nd);  
                     }
@@ -1802,7 +1839,7 @@ yyreduce:
 
   case 4:
 /* Line 1792 of yacc.c  */
-#line 266 "parse.y"
+#line 320 "parse.y"
     {
                       (yyval.nd) = node_array_new();
                     }
@@ -1810,7 +1847,7 @@ yyreduce:
 
   case 5:
 /* Line 1792 of yacc.c  */
-#line 270 "parse.y"
+#line 324 "parse.y"
     {
                       (yyval.nd) = node_array_new();
                       node_array_add((yyval.nd), (yyvsp[(1) - (1)].nd));
@@ -1819,7 +1856,7 @@ yyreduce:
 
   case 6:
 /* Line 1792 of yacc.c  */
-#line 275 "parse.y"
+#line 329 "parse.y"
     {
                       (yyval.nd) = (yyvsp[(1) - (3)].nd);
                       node_array_add((yyvsp[(1) - (3)].nd), (yyvsp[(3) - (3)].nd));
@@ -1828,14 +1865,14 @@ yyreduce:
 
   case 7:
 /* Line 1792 of yacc.c  */
-#line 280 "parse.y"
+#line 334 "parse.y"
     {
                     }
     break;
 
   case 8:
 /* Line 1792 of yacc.c  */
-#line 285 "parse.y"
+#line 339 "parse.y"
     {
                       (yyval.nd) = node_let_new((yyvsp[(1) - (3)].nd), (yyvsp[(3) - (3)].nd));
                     }
@@ -1843,7 +1880,7 @@ yyreduce:
 
   case 9:
 /* Line 1792 of yacc.c  */
-#line 289 "parse.y"
+#line 343 "parse.y"
     {
                       (yyval.nd) = node_return_new((yyvsp[(2) - (2)].nd));
                     }
@@ -1851,7 +1888,7 @@ yyreduce:
 
   case 10:
 /* Line 1792 of yacc.c  */
-#line 293 "parse.y"
+#line 347 "parse.y"
     {
                       (yyval.nd) = node_import_new((yyvsp[(2) - (2)].id));
                     }
@@ -1859,7 +1896,7 @@ yyreduce:
 
   case 12:
 /* Line 1792 of yacc.c  */
-#line 298 "parse.y"
+#line 352 "parse.y"
     {
                       (yyval.nd) = node_break_new();
                     }
@@ -1867,7 +1904,7 @@ yyreduce:
 
   case 13:
 /* Line 1792 of yacc.c  */
-#line 302 "parse.y"
+#line 356 "parse.y"
     {
                       (yyval.nd) = (yyvsp[(1) - (1)].nd);
                     }
@@ -1875,7 +1912,7 @@ yyreduce:
 
   case 15:
 /* Line 1792 of yacc.c  */
-#line 309 "parse.y"
+#line 363 "parse.y"
     {
                         (yyval.nd) = node_ident_new((yyvsp[(1) - (1)].id));
                     }
@@ -1883,7 +1920,7 @@ yyreduce:
 
   case 16:
 /* Line 1792 of yacc.c  */
-#line 315 "parse.y"
+#line 369 "parse.y"
     {
                       (yyval.nd) = node_op_new("+", (yyvsp[(1) - (3)].nd), (yyvsp[(3) - (3)].nd));
                     }
@@ -1891,7 +1928,7 @@ yyreduce:
 
   case 17:
 /* Line 1792 of yacc.c  */
-#line 319 "parse.y"
+#line 373 "parse.y"
     {
                       (yyval.nd) = node_op_new("-", (yyvsp[(1) - (3)].nd), (yyvsp[(3) - (3)].nd));
                     }
@@ -1899,7 +1936,7 @@ yyreduce:
 
   case 18:
 /* Line 1792 of yacc.c  */
-#line 323 "parse.y"
+#line 377 "parse.y"
     {
                       (yyval.nd) = node_op_new("*", (yyvsp[(1) - (3)].nd), (yyvsp[(3) - (3)].nd));
                     }
@@ -1907,7 +1944,7 @@ yyreduce:
 
   case 19:
 /* Line 1792 of yacc.c  */
-#line 327 "parse.y"
+#line 381 "parse.y"
     {
                       (yyval.nd) = node_op_new("/", (yyvsp[(1) - (3)].nd), (yyvsp[(3) - (3)].nd));
                     }
@@ -1915,7 +1952,7 @@ yyreduce:
 
   case 20:
 /* Line 1792 of yacc.c  */
-#line 331 "parse.y"
+#line 385 "parse.y"
     {
                       (yyval.nd) = node_op_new("%", (yyvsp[(1) - (3)].nd), (yyvsp[(3) - (3)].nd));
                     }
@@ -1923,7 +1960,7 @@ yyreduce:
 
   case 21:
 /* Line 1792 of yacc.c  */
-#line 335 "parse.y"
+#line 389 "parse.y"
     {
                       (yyval.nd) = node_op_new("|", (yyvsp[(1) - (3)].nd), (yyvsp[(3) - (3)].nd));
                     }
@@ -1931,7 +1968,7 @@ yyreduce:
 
   case 22:
 /* Line 1792 of yacc.c  */
-#line 339 "parse.y"
+#line 393 "parse.y"
     {
                       (yyval.nd) = node_op_new("&", (yyvsp[(1) - (3)].nd), (yyvsp[(3) - (3)].nd));
                     }
@@ -1939,7 +1976,7 @@ yyreduce:
 
   case 23:
 /* Line 1792 of yacc.c  */
-#line 343 "parse.y"
+#line 397 "parse.y"
     {
                       (yyval.nd) = node_op_new(">", (yyvsp[(1) - (3)].nd), (yyvsp[(3) - (3)].nd));
                     }
@@ -1947,7 +1984,7 @@ yyreduce:
 
   case 24:
 /* Line 1792 of yacc.c  */
-#line 347 "parse.y"
+#line 401 "parse.y"
     {
                       (yyval.nd) = node_op_new(">=", (yyvsp[(1) - (3)].nd), (yyvsp[(3) - (3)].nd));
                     }
@@ -1955,7 +1992,7 @@ yyreduce:
 
   case 25:
 /* Line 1792 of yacc.c  */
-#line 351 "parse.y"
+#line 405 "parse.y"
     {
                       (yyval.nd) = node_op_new("<", (yyvsp[(1) - (3)].nd), (yyvsp[(3) - (3)].nd));
                     }
@@ -1963,7 +2000,7 @@ yyreduce:
 
   case 26:
 /* Line 1792 of yacc.c  */
-#line 355 "parse.y"
+#line 409 "parse.y"
     {
                       (yyval.nd) = node_op_new("<=", (yyvsp[(1) - (3)].nd), (yyvsp[(3) - (3)].nd));
                     }
@@ -1971,7 +2008,7 @@ yyreduce:
 
   case 27:
 /* Line 1792 of yacc.c  */
-#line 359 "parse.y"
+#line 413 "parse.y"
     {
                       (yyval.nd) = node_op_new("==", (yyvsp[(1) - (3)].nd), (yyvsp[(3) - (3)].nd));
                     }
@@ -1979,7 +2016,7 @@ yyreduce:
 
   case 28:
 /* Line 1792 of yacc.c  */
-#line 363 "parse.y"
+#line 417 "parse.y"
     {
                       (yyval.nd) = node_op_new("!=", (yyvsp[(1) - (3)].nd), (yyvsp[(3) - (3)].nd));
                     }
@@ -1987,7 +2024,7 @@ yyreduce:
 
   case 29:
 /* Line 1792 of yacc.c  */
-#line 367 "parse.y"
+#line 421 "parse.y"
     {
                       (yyval.nd) = node_value_new((yyvsp[(2) - (2)].nd));
                     }
@@ -1995,7 +2032,7 @@ yyreduce:
 
   case 30:
 /* Line 1792 of yacc.c  */
-#line 371 "parse.y"
+#line 425 "parse.y"
     {
                       (yyval.nd) = node_value_new((yyvsp[(2) - (2)].nd));
                     }
@@ -2003,7 +2040,7 @@ yyreduce:
 
   case 31:
 /* Line 1792 of yacc.c  */
-#line 375 "parse.y"
+#line 429 "parse.y"
     {
                       (yyval.nd) = node_op_new("!", NULL, (yyvsp[(2) - (2)].nd));
                     }
@@ -2011,7 +2048,7 @@ yyreduce:
 
   case 32:
 /* Line 1792 of yacc.c  */
-#line 379 "parse.y"
+#line 433 "parse.y"
     {
                       (yyval.nd) = node_op_new("~", NULL, (yyvsp[(2) - (2)].nd));
                     }
@@ -2019,7 +2056,7 @@ yyreduce:
 
   case 33:
 /* Line 1792 of yacc.c  */
-#line 383 "parse.y"
+#line 437 "parse.y"
     {
                       (yyval.nd) = node_op_new("&&", (yyvsp[(1) - (3)].nd), (yyvsp[(3) - (3)].nd));
                     }
@@ -2027,7 +2064,7 @@ yyreduce:
 
   case 34:
 /* Line 1792 of yacc.c  */
-#line 387 "parse.y"
+#line 441 "parse.y"
     {
                       (yyval.nd) = node_op_new("||", (yyvsp[(1) - (3)].nd), (yyvsp[(3) - (3)].nd));
                     }
@@ -2035,7 +2072,7 @@ yyreduce:
 
   case 35:
 /* Line 1792 of yacc.c  */
-#line 391 "parse.y"
+#line 445 "parse.y"
     {
                       (yyval.nd) = (yyvsp[(1) - (1)].nd);
                     }
@@ -2043,7 +2080,7 @@ yyreduce:
 
   case 36:
 /* Line 1792 of yacc.c  */
-#line 397 "parse.y"
+#line 451 "parse.y"
     {
                       (yyval.nd) = node_op_new("+", (yyvsp[(1) - (3)].nd), (yyvsp[(3) - (3)].nd));
                     }
@@ -2051,7 +2088,7 @@ yyreduce:
 
   case 37:
 /* Line 1792 of yacc.c  */
-#line 401 "parse.y"
+#line 455 "parse.y"
     {
                       (yyval.nd) = node_op_new("-", (yyvsp[(1) - (3)].nd), (yyvsp[(3) - (3)].nd));
                     }
@@ -2059,7 +2096,7 @@ yyreduce:
 
   case 38:
 /* Line 1792 of yacc.c  */
-#line 405 "parse.y"
+#line 459 "parse.y"
     {
                       (yyval.nd) = node_op_new("*", (yyvsp[(1) - (3)].nd), (yyvsp[(3) - (3)].nd));
                     }
@@ -2067,7 +2104,7 @@ yyreduce:
 
   case 39:
 /* Line 1792 of yacc.c  */
-#line 409 "parse.y"
+#line 463 "parse.y"
     {
                       (yyval.nd) = node_op_new("/", (yyvsp[(1) - (3)].nd), (yyvsp[(3) - (3)].nd));
                     }
@@ -2075,7 +2112,7 @@ yyreduce:
 
   case 40:
 /* Line 1792 of yacc.c  */
-#line 413 "parse.y"
+#line 467 "parse.y"
     {
                       (yyval.nd) = node_op_new("%", (yyvsp[(1) - (3)].nd), (yyvsp[(3) - (3)].nd));
                     }
@@ -2083,7 +2120,7 @@ yyreduce:
 
   case 41:
 /* Line 1792 of yacc.c  */
-#line 417 "parse.y"
+#line 471 "parse.y"
     {
                       (yyval.nd) = node_op_new("|", (yyvsp[(1) - (3)].nd), (yyvsp[(3) - (3)].nd));
                     }
@@ -2091,7 +2128,7 @@ yyreduce:
 
   case 42:
 /* Line 1792 of yacc.c  */
-#line 421 "parse.y"
+#line 475 "parse.y"
     {
                       (yyval.nd) = node_op_new("&", (yyvsp[(1) - (3)].nd), (yyvsp[(3) - (3)].nd));
                     }
@@ -2099,7 +2136,7 @@ yyreduce:
 
   case 43:
 /* Line 1792 of yacc.c  */
-#line 425 "parse.y"
+#line 479 "parse.y"
     {
                       (yyval.nd) = node_op_new(">", (yyvsp[(1) - (3)].nd), (yyvsp[(3) - (3)].nd));
                     }
@@ -2107,7 +2144,7 @@ yyreduce:
 
   case 44:
 /* Line 1792 of yacc.c  */
-#line 429 "parse.y"
+#line 483 "parse.y"
     {
                       (yyval.nd) = node_op_new(">=", (yyvsp[(1) - (3)].nd), (yyvsp[(3) - (3)].nd));
                     }
@@ -2115,7 +2152,7 @@ yyreduce:
 
   case 45:
 /* Line 1792 of yacc.c  */
-#line 433 "parse.y"
+#line 487 "parse.y"
     {
                       (yyval.nd) = node_op_new("<", (yyvsp[(1) - (3)].nd), (yyvsp[(3) - (3)].nd));
                     }
@@ -2123,7 +2160,7 @@ yyreduce:
 
   case 46:
 /* Line 1792 of yacc.c  */
-#line 437 "parse.y"
+#line 491 "parse.y"
     {
                       (yyval.nd) = node_op_new("<=", (yyvsp[(1) - (3)].nd), (yyvsp[(3) - (3)].nd));
                     }
@@ -2131,7 +2168,7 @@ yyreduce:
 
   case 47:
 /* Line 1792 of yacc.c  */
-#line 441 "parse.y"
+#line 495 "parse.y"
     {
                       (yyval.nd) = node_op_new("==", (yyvsp[(1) - (3)].nd), (yyvsp[(3) - (3)].nd));
                     }
@@ -2139,7 +2176,7 @@ yyreduce:
 
   case 48:
 /* Line 1792 of yacc.c  */
-#line 445 "parse.y"
+#line 499 "parse.y"
     {
                       (yyval.nd) = node_op_new("!=", (yyvsp[(1) - (3)].nd), (yyvsp[(3) - (3)].nd));
                     }
@@ -2147,7 +2184,7 @@ yyreduce:
 
   case 49:
 /* Line 1792 of yacc.c  */
-#line 449 "parse.y"
+#line 503 "parse.y"
     {
                       (yyval.nd) = node_value_new((yyvsp[(2) - (2)].nd));
                     }
@@ -2155,7 +2192,7 @@ yyreduce:
 
   case 50:
 /* Line 1792 of yacc.c  */
-#line 453 "parse.y"
+#line 507 "parse.y"
     {
                       (yyval.nd) = node_value_new((yyvsp[(2) - (2)].nd));
                     }
@@ -2163,7 +2200,7 @@ yyreduce:
 
   case 51:
 /* Line 1792 of yacc.c  */
-#line 457 "parse.y"
+#line 511 "parse.y"
     {
                       (yyval.nd) = node_op_new("!", NULL, (yyvsp[(2) - (2)].nd));
                     }
@@ -2171,7 +2208,7 @@ yyreduce:
 
   case 52:
 /* Line 1792 of yacc.c  */
-#line 461 "parse.y"
+#line 515 "parse.y"
     {
                       (yyval.nd) = node_op_new("~", NULL, (yyvsp[(2) - (2)].nd));
                     }
@@ -2179,7 +2216,7 @@ yyreduce:
 
   case 53:
 /* Line 1792 of yacc.c  */
-#line 465 "parse.y"
+#line 519 "parse.y"
     {
                       (yyval.nd) = node_op_new("&&", (yyvsp[(1) - (3)].nd), (yyvsp[(3) - (3)].nd));
                     }
@@ -2187,7 +2224,7 @@ yyreduce:
 
   case 54:
 /* Line 1792 of yacc.c  */
-#line 469 "parse.y"
+#line 523 "parse.y"
     {
                       (yyval.nd) = node_op_new("||", (yyvsp[(1) - (3)].nd), (yyvsp[(3) - (3)].nd));
                     }
@@ -2195,7 +2232,7 @@ yyreduce:
 
   case 55:
 /* Line 1792 of yacc.c  */
-#line 473 "parse.y"
+#line 527 "parse.y"
     {
                       (yyval.nd) = (yyvsp[(1) - (1)].nd);
                     }
@@ -2203,7 +2240,7 @@ yyreduce:
 
   case 56:
 /* Line 1792 of yacc.c  */
-#line 479 "parse.y"
+#line 533 "parse.y"
     {
                       (yyval.nd) = NULL;
                     }
@@ -2211,7 +2248,7 @@ yyreduce:
 
   case 57:
 /* Line 1792 of yacc.c  */
-#line 483 "parse.y"
+#line 537 "parse.y"
     {
                       (yyval.nd) = node_if_new((yyvsp[(4) - (7)].nd), (yyvsp[(6) - (7)].nd), NULL);
                     }
@@ -2219,7 +2256,7 @@ yyreduce:
 
   case 58:
 /* Line 1792 of yacc.c  */
-#line 489 "parse.y"
+#line 543 "parse.y"
     {
                       (yyval.nd) = NULL;
                     }
@@ -2227,7 +2264,7 @@ yyreduce:
 
   case 59:
 /* Line 1792 of yacc.c  */
-#line 493 "parse.y"
+#line 547 "parse.y"
     {
                       (yyval.nd) = (yyvsp[(4) - (5)].nd);
                     }
@@ -2235,7 +2272,7 @@ yyreduce:
 
   case 60:
 /* Line 1792 of yacc.c  */
-#line 499 "parse.y"
+#line 553 "parse.y"
     {
                       (yyval.nd) = node_array_new();
                     }
@@ -2243,7 +2280,7 @@ yyreduce:
 
   case 61:
 /* Line 1792 of yacc.c  */
-#line 503 "parse.y"
+#line 557 "parse.y"
     {
                       (yyval.nd) = (yyvsp[(1) - (1)].nd);
                     }
@@ -2251,7 +2288,7 @@ yyreduce:
 
   case 62:
 /* Line 1792 of yacc.c  */
-#line 509 "parse.y"
+#line 563 "parse.y"
     {
                       (yyval.nd) = node_array_new();
                       node_array_add((yyval.nd), (yyvsp[(1) - (1)].nd));
@@ -2260,7 +2297,7 @@ yyreduce:
 
   case 63:
 /* Line 1792 of yacc.c  */
-#line 514 "parse.y"
+#line 568 "parse.y"
     {
                       (yyval.nd) = (yyvsp[(1) - (3)].nd);
                       node_array_add((yyvsp[(1) - (3)].nd), (yyvsp[(3) - (3)].nd));
@@ -2269,7 +2306,7 @@ yyreduce:
 
   case 66:
 /* Line 1792 of yacc.c  */
-#line 525 "parse.y"
+#line 579 "parse.y"
     {
                         (yyval.nd) = (yyvsp[(1) - (1)].nd);
                     }
@@ -2277,7 +2314,7 @@ yyreduce:
 
   case 67:
 /* Line 1792 of yacc.c  */
-#line 529 "parse.y"
+#line 583 "parse.y"
     {
                         (yyval.nd) = (yyvsp[(1) - (1)].nd);
                     }
@@ -2285,7 +2322,7 @@ yyreduce:
 
   case 68:
 /* Line 1792 of yacc.c  */
-#line 533 "parse.y"
+#line 587 "parse.y"
     {
                       (yyval.nd) = node_ident_new((yyvsp[(1) - (1)].id));
                     }
@@ -2293,7 +2330,7 @@ yyreduce:
 
   case 69:
 /* Line 1792 of yacc.c  */
-#line 537 "parse.y"
+#line 591 "parse.y"
     {
                        (yyval.nd) = (yyvsp[(2) - (3)].nd);
                     }
@@ -2301,7 +2338,7 @@ yyreduce:
 
   case 70:
 /* Line 1792 of yacc.c  */
-#line 541 "parse.y"
+#line 595 "parse.y"
     {
                       (yyval.nd) = node_array_of((yyvsp[(2) - (3)].nd));
                     }
@@ -2309,7 +2346,7 @@ yyreduce:
 
   case 71:
 /* Line 1792 of yacc.c  */
-#line 545 "parse.y"
+#line 599 "parse.y"
     {
                       (yyval.nd) = node_array_of(NULL);
                     }
@@ -2317,7 +2354,7 @@ yyreduce:
 
   case 72:
 /* Line 1792 of yacc.c  */
-#line 549 "parse.y"
+#line 603 "parse.y"
     {
                       (yyval.nd) = node_map_of((yyvsp[(2) - (3)].nd));
                     }
@@ -2325,7 +2362,7 @@ yyreduce:
 
   case 73:
 /* Line 1792 of yacc.c  */
-#line 553 "parse.y"
+#line 607 "parse.y"
     {
                       (yyval.nd) = node_map_of(NULL);
                     }
@@ -2333,7 +2370,7 @@ yyreduce:
 
   case 74:
 /* Line 1792 of yacc.c  */
-#line 557 "parse.y"
+#line 611 "parse.y"
     {
                       (yyval.nd) = node_if_new((yyvsp[(2) - (6)].nd), (yyvsp[(4) - (6)].nd), (yyvsp[(6) - (6)].nd));
                     }
@@ -2341,7 +2378,7 @@ yyreduce:
 
   case 75:
 /* Line 1792 of yacc.c  */
-#line 561 "parse.y"
+#line 615 "parse.y"
     {
                       (yyval.nd) = node_null();
                     }
@@ -2349,7 +2386,7 @@ yyreduce:
 
   case 76:
 /* Line 1792 of yacc.c  */
-#line 565 "parse.y"
+#line 619 "parse.y"
     {
                       (yyval.nd) = node_true();
                     }
@@ -2357,7 +2394,7 @@ yyreduce:
 
   case 77:
 /* Line 1792 of yacc.c  */
-#line 569 "parse.y"
+#line 623 "parse.y"
     {
                       (yyval.nd) = node_false();
                     }
@@ -2365,7 +2402,7 @@ yyreduce:
 
   case 78:
 /* Line 1792 of yacc.c  */
-#line 575 "parse.y"
+#line 629 "parse.y"
     {
                        (yyval.nd) = (yyvsp[(1) - (1)].nd);
                     }
@@ -2373,7 +2410,7 @@ yyreduce:
 
   case 79:
 /* Line 1792 of yacc.c  */
-#line 579 "parse.y"
+#line 633 "parse.y"
     {
                       (yyval.nd) = node_call_new(NULL, node_ident_new((yyvsp[(1) - (4)].id)), (yyvsp[(3) - (4)].nd), NULL);
                     }
@@ -2381,7 +2418,7 @@ yyreduce:
 
   case 80:
 /* Line 1792 of yacc.c  */
-#line 583 "parse.y"
+#line 637 "parse.y"
     {
                       (yyval.nd) = node_call_new(NULL, node_ident_new((yyvsp[(3) - (6)].id)), (yyvsp[(5) - (6)].nd), NULL);
                     }
@@ -2389,7 +2426,7 @@ yyreduce:
 
   case 81:
 /* Line 1792 of yacc.c  */
-#line 587 "parse.y"
+#line 641 "parse.y"
     {
                       (yyval.nd) = node_call_new((yyvsp[(1) - (3)].nd), node_ident_new((yyvsp[(3) - (3)].id)), NULL, NULL);
                     }
@@ -2397,7 +2434,7 @@ yyreduce:
 
   case 83:
 /* Line 1792 of yacc.c  */
-#line 594 "parse.y"
+#line 648 "parse.y"
     {
                       (yyval.nd) = node_call_new(NULL, NULL, NULL, (yyvsp[(1) - (1)].nd));
                     }
@@ -2405,7 +2442,7 @@ yyreduce:
 
   case 84:
 /* Line 1792 of yacc.c  */
-#line 598 "parse.y"
+#line 652 "parse.y"
     {
                       (yyval.nd) = node_call_new(NULL, node_ident_new((yyvsp[(2) - (3)].id)), NULL, (yyvsp[(3) - (3)].nd));
                     }
@@ -2413,7 +2450,7 @@ yyreduce:
 
   case 85:
 /* Line 1792 of yacc.c  */
-#line 602 "parse.y"
+#line 656 "parse.y"
     {
                       (yyval.nd) = node_call_new(NULL, node_ident_new((yyvsp[(1) - (5)].id)), (yyvsp[(3) - (5)].nd), (yyvsp[(5) - (5)].nd));
                     }
@@ -2421,7 +2458,7 @@ yyreduce:
 
   case 86:
 /* Line 1792 of yacc.c  */
-#line 606 "parse.y"
+#line 660 "parse.y"
     {
                       (yyval.nd) = node_call_new((yyvsp[(1) - (7)].nd), node_ident_new((yyvsp[(3) - (7)].id)), (yyvsp[(5) - (7)].nd), (yyvsp[(7) - (7)].nd));
                     }
@@ -2429,7 +2466,7 @@ yyreduce:
 
   case 87:
 /* Line 1792 of yacc.c  */
-#line 610 "parse.y"
+#line 664 "parse.y"
     {
                       (yyval.nd) = node_call_new((yyvsp[(1) - (4)].nd), node_ident_new((yyvsp[(3) - (4)].id)), NULL, (yyvsp[(4) - (4)].nd));
                     }
@@ -2437,7 +2474,7 @@ yyreduce:
 
   case 88:
 /* Line 1792 of yacc.c  */
-#line 616 "parse.y"
+#line 670 "parse.y"
     {
                       (yyval.nd) = node_pair_new((yyvsp[(1) - (3)].nd), (yyvsp[(3) - (3)].nd));
                     }
@@ -2445,7 +2482,7 @@ yyreduce:
 
   case 89:
 /* Line 1792 of yacc.c  */
-#line 620 "parse.y"
+#line 674 "parse.y"
     {
                       (yyval.nd) = node_pair_new(node_ident_new((yyvsp[(1) - (3)].id)), (yyvsp[(3) - (3)].nd));
                     }
@@ -2453,7 +2490,7 @@ yyreduce:
 
   case 90:
 /* Line 1792 of yacc.c  */
-#line 626 "parse.y"
+#line 680 "parse.y"
     {
                       (yyval.nd) = node_map_new();
                       node_array_add((yyval.nd), (yyvsp[(1) - (1)].nd));
@@ -2462,7 +2499,7 @@ yyreduce:
 
   case 91:
 /* Line 1792 of yacc.c  */
-#line 631 "parse.y"
+#line 685 "parse.y"
     {
                       (yyval.nd) = (yyvsp[(1) - (3)].nd);
                       node_array_add((yyval.nd), (yyvsp[(3) - (3)].nd));
@@ -2471,7 +2508,7 @@ yyreduce:
 
   case 92:
 /* Line 1792 of yacc.c  */
-#line 638 "parse.y"
+#line 692 "parse.y"
     {
                       (yyval.nd) = NULL;
                     }
@@ -2479,7 +2516,7 @@ yyreduce:
 
   case 93:
 /* Line 1792 of yacc.c  */
-#line 642 "parse.y"
+#line 696 "parse.y"
     {
                        (yyval.nd) = (yyvsp[(1) - (1)].nd);
                     }
@@ -2487,7 +2524,7 @@ yyreduce:
 
   case 94:
 /* Line 1792 of yacc.c  */
-#line 648 "parse.y"
+#line 702 "parse.y"
     {
                       (yyval.nd) = node_block_new((yyvsp[(2) - (4)].nd), (yyvsp[(3) - (4)].nd));
                     }
@@ -2495,7 +2532,7 @@ yyreduce:
 
   case 95:
 /* Line 1792 of yacc.c  */
-#line 652 "parse.y"
+#line 706 "parse.y"
     {
                       (yyval.nd) = node_block_new(NULL, (yyvsp[(2) - (3)].nd));
                     }
@@ -2503,7 +2540,7 @@ yyreduce:
 
   case 96:
 /* Line 1792 of yacc.c  */
-#line 658 "parse.y"
+#line 712 "parse.y"
     {
                       (yyval.nd) = NULL;
                     }
@@ -2511,7 +2548,7 @@ yyreduce:
 
   case 97:
 /* Line 1792 of yacc.c  */
-#line 662 "parse.y"
+#line 716 "parse.y"
     {
                       (yyval.nd) = (yyvsp[(1) - (2)].nd);
                     }
@@ -2519,7 +2556,7 @@ yyreduce:
 
   case 98:
 /* Line 1792 of yacc.c  */
-#line 668 "parse.y"
+#line 722 "parse.y"
     {
                       (yyval.nd) = node_array_new();
                       node_array_add((yyval.nd), node_ident_new((yyvsp[(1) - (1)].id)));
@@ -2528,7 +2565,7 @@ yyreduce:
 
   case 99:
 /* Line 1792 of yacc.c  */
-#line 673 "parse.y"
+#line 727 "parse.y"
     {
                       (yyval.nd) = (yyvsp[(1) - (3)].nd);
                       node_array_add((yyval.nd), node_ident_new((yyvsp[(3) - (3)].id)));
@@ -2537,13 +2574,13 @@ yyreduce:
 
   case 102:
 /* Line 1792 of yacc.c  */
-#line 683 "parse.y"
+#line 737 "parse.y"
     {yyerrok;}
     break;
 
 
 /* Line 1792 of yacc.c  */
-#line 2547 "parse.tab.c"
+#line 2584 "parse.tab.c"
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -2775,7 +2812,7 @@ yyreturn:
 
 
 /* Line 2055 of yacc.c  */
-#line 692 "parse.y"
+#line 746 "parse.y"
 
 //#define yylval  (*((YYSTYPE*)(p->lval)))
 #include "parse.tab.h"
@@ -2784,13 +2821,28 @@ static void
 yyerror(parser_state *p, const char *s)
 {
   p->nerr++;
-  if (p->file_name) {
-    fprintf(stderr, "%s:%d:%s\n", p->file_name, p->lineno, s);
+  if (p->file_name)
+  {
+    fprintf(stderr, "%s[Error]:%d:%s\n", p->file_name, p->lineno, s);
   }
-  else {
+  else 
+  {
     fprintf(stderr, "%s\n", s);
   }
   exit(1);
+}
+
+static void
+yywarnning(parser_state* p,const char* s)
+{
+  if(p->file_name)
+  {
+    printf("%s[Warnning]:%d:%s\n",p ->file_name,p->lineno,s);
+  }
+  else
+  {
+    printf("[Warnning]:%s",s);
+  }
 }
 
 static int
@@ -2874,7 +2926,6 @@ TokenType getToken(YYSTYPE* yylval){
   StateType state = BEGIN;
   BOOL save;
   int yyleng;
-  //STRList* str_list = (STRList*)malloc(sizeof(STRList));
   while(state != FINISH)
   {
     c = getNextChar();
@@ -2910,8 +2961,6 @@ TokenType getToken(YYSTYPE* yylval){
         else if(c == '\"')
         {
           state = INSTR;
-          //List_Init(str_list);
-          yyleng = 0;
         }
         else
         {
@@ -3017,10 +3066,8 @@ TokenType getToken(YYSTYPE* yylval){
         if(c == '\"')
         {
           ungetNextChar();
-          save = FALSE;
           state = FINISH;
-          //squ_string s = str_list -> stringtable;
-          //free(str_list);
+          save = FALSE;
           result = lit_string;
         }
       break;

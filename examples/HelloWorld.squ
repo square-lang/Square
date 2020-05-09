@@ -1,5 +1,6 @@
 # Print the "Hello World" on the screen! #
+# Note: Can not running now because bug in using String #
 cat("Hello World!")
 #
-TODO: output the "Hello World"
+TODO: output the "Hello World" and Solve the bug
 #

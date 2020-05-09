@@ -1,2 +1,8 @@
+# TODO: define a block #
+# define a block 
+block i{
+    import io;
+}
+#
 # goto to grade "i" #
 goto @i

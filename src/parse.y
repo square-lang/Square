@@ -1,20 +1,37 @@
-/*********************************************/
-/**                                          */
-/** parse.y - square's lexical and parser    */
-/**                                          */
-/** How to complie:                          */
-/** Linux/Mac:                               */
-/** $ bison -d -y parse.y                    */
-/**                                          */
-/** Windows:                                 */
-/** $ win_bison -d -y parse.y                */
-/**                                          */
-/** Author:Stepfen Shawn                     */
-/** Created at Apr 25 00:27:34 2020          */
-/**                                          */
-/** Copyright (c) 2020 Stepfen Shawn         */
-/**                                          */
-/*********************************************/
+/************************************************************************************/
+/**                                                                                 */
+/** parse.y - square's lexical and parser                                           */
+/**                                                                                 */
+/** How to complie:                                                                 */
+/** Linux/Mac:                                                                      */
+/** $ bison -d -y parse.y                                                           */
+/**                                                                                 */
+/** Windows:                                                                        */
+/** $ win_bison -d -y parse.y                                                       */
+/**                                                                                 */
+/** Author:Stepfen Shawn                                                            */
+/** Created at Apr 25 00:27:34 2020                                                 */
+/**                                                                                 */
+/** Copyright (c) 2020 Stepfen Shawn                                                */
+/**                                                                                 */
+/** Permission is hereby granted, free of charge, to any person obtaining a copy    */
+/** of this software and associated documentation files (the "Software"), to deal   */
+/** in the Software without restriction, including without limitation the rights    */
+/** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell       */
+/** copies of the Software, and to permit persons to whom the Software is           */
+/** furnished to do so, subject to the following conditions:                        */
+/**                                                                                 */
+/** The above copyright notice and this permission notice shall be included in all  */
+/** copies or substantial portions of the Software.                                 */
+/**                                                                                 */
+/** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR      */
+/** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,        */
+/** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE     */
+/** AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER          */
+/** LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,   */
+/** OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE   */
+/** SOFTWARE.                                                                       */                                            
+/************************************************************************************/
 
 %{
 
@@ -47,7 +64,8 @@ extern int yydebug;
 #endif
 
 /* State type in Lexcial */
-typedef enum{
+typedef enum
+{
   BEGIN,       /* start */
   INASSIGN,    /* assign */
   INCOMMENT,   /* comment */
@@ -73,6 +91,40 @@ static int bufsize = 0; /* current size of buffer string */
 static BOOL EOF_flag = FALSE; /* corrects ungetNextChar behavior on EOF */
 
 #define YYLEX_DECL() yylex(YYSTYPE *yylval)
+
+static char*
+strdup_(const char *str)
+{
+    //Space for length plus nul
+    char *new_str = malloc(strlen (str) + 1);  
+    // No memory
+    if (new_str == NULL)
+        return NULL;
+    //Copy the characters          
+    strcpy(new_str, str);       
+    //Return the new string               
+    return new_str;                            
+}
+
+
+static char*
+strndup_(const char *str, size_t chars)
+{
+    char* buffer;
+    size_t n;
+
+    buffer = (char *)malloc(chars + 1);
+    if(buffer)
+    {
+        for (n = 0;((n < chars) && (str[n] != 0));n++)
+        {
+          buffer[n] = str[n];
+        }
+        buffer[n] = 0;
+    }
+
+    return buffer;
+}
 
 /*
 **  In parse.tab.h:
@@ -122,7 +174,8 @@ static BOOL EOF_flag = FALSE; /* corrects ungetNextChar behavior on EOF */
 
 /* define the string list */
 /* use list to save the string value */
-typedef struct{
+typedef struct
+{
     squ_string stringtable;
     size_t n;
 }STRList;
@@ -185,8 +238,9 @@ void List_Append(STRList* list, int value);
 
 %{
 static int yylex(YYSTYPE *lval);
-static void yyerror(parser_state *p, const char *s);
-static int yywarp();
+static void yyerror(parser_state* p, const char* s);
+static int yywarp(void);
+static void yywarnning(parser_state* p,const char* s);
 %}
 
 %token
@@ -697,13 +751,28 @@ static void
 yyerror(parser_state *p, const char *s)
 {
   p->nerr++;
-  if (p->file_name) {
-    fprintf(stderr, "%s:%d:%s\n", p->file_name, p->lineno, s);
+  if (p->file_name)
+  {
+    fprintf(stderr, "%s[Error]:%d:%s\n", p->file_name, p->lineno, s);
   }
-  else {
+  else 
+  {
     fprintf(stderr, "%s\n", s);
   }
   exit(1);
+}
+
+static void
+yywarnning(parser_state* p,const char* s)
+{
+  if(p->file_name)
+  {
+    printf("%s[Warnning]:%d:%s\n",p ->file_name,p->lineno,s);
+  }
+  else
+  {
+    printf("[Warnning]:%s",s);
+  }
 }
 
 static int
@@ -787,7 +856,6 @@ TokenType getToken(YYSTYPE* yylval){
   StateType state = BEGIN;
   BOOL save;
   int yyleng;
-  //STRList* str_list = (STRList*)malloc(sizeof(STRList));
   while(state != FINISH)
   {
     c = getNextChar();
@@ -823,8 +891,6 @@ TokenType getToken(YYSTYPE* yylval){
         else if(c == '\"')
         {
           state = INSTR;
-          //List_Init(str_list);
-          yyleng = 0;
         }
         else
         {
@@ -930,10 +996,8 @@ TokenType getToken(YYSTYPE* yylval){
         if(c == '\"')
         {
           ungetNextChar();
-          save = FALSE;
           state = FINISH;
-          //squ_string s = str_list -> stringtable;
-          //free(str_list);
+          save = FALSE;
           result = lit_string;
         }
       break;
