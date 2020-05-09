@@ -9,7 +9,7 @@ Square is a powerful programming language.
 $ cd src
 $ ./a.exe ../examples/helloworld.squ
 ```
-#### Note:Square doesn't work yet, but you can check its syntax.
+#### Note: Square doesn't work yet. It's under development.
 ## Examples
 A program to print "Hello World" on the screen.
 ```
