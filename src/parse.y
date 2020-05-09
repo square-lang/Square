@@ -44,19 +44,20 @@ extern int yydebug;
 # define BOOL int
 #endif
 
+/* State type in Lexcial */
 typedef enum{
-  BEGIN,
-  INASSIGN,
-  INCOMMENT,
-  INNUM,
-  INID,
-  INSTR,
-  FINISH,
+  BEGIN,       /* start */
+  INASSIGN,    /* assign */
+  INCOMMENT,   /* comment */
+  INNUM,       /* number */
+  INID,        /* identifier */
+  INSTR,       /* string */
+  FINISH,      /* end */
 }StateType;
 
 #define MAXTOKENLEN 40
 
-#define MAXRESERVED 7
+#define MAXRESERVED 10
 
 /* lexeme of identifier or reserved word */
 char tokenString[MAXTOKENLEN+1];
@@ -141,11 +142,35 @@ void List_Append(STRList* list, int value);
   char char_val;
 }
 
-%type <nd> program stmt_seq
-%type <nd> stmt expr condition block cond var primary primary0
-%type <nd> stmts args opt_args opt_block f_args map map_args bparam
-%type <nd> opt_else opt_elsif
-%type <id> identifier
+%type <nd> 
+      program 
+      stmt_seq
+
+%type <nd> 
+      stmt
+      expr
+      condition
+      block
+      grade
+      cond
+      var
+      primary
+      primary0
+
+%type <nd> 
+      stmts 
+      args 
+      opt_args 
+      opt_block 
+      f_args 
+      map 
+      map_args 
+      bparam
+%type <nd> 
+      opt_else 
+      opt_elsif
+%type <id> 
+      identifier
 
 %pure-parser
 %parse-param {parser_state *p}
@@ -165,6 +190,8 @@ static int yywarp();
         keyword_true
         keyword_false
         keyword_import
+        keyword_goto
+        keyword_block
 %token
         op_add
         op_sub
@@ -184,6 +211,7 @@ static int yywarp();
         op_next
         op_assign
         ERROR
+        ENDFILE
 
 %token
         lit_number
@@ -266,6 +294,7 @@ stmt            : var op_assign expr
                     {
                       $$ = $1;
                     }
+                | keyword_goto grade
                 ;
 
 var             : identifier
@@ -480,6 +509,10 @@ args            : expr
                     }
                 ;
 
+grade           : /* none */
+                | '@' identifier
+                ;
+
 primary0        : lit_number
                     {
                       $$ = $<nd>1;
@@ -553,9 +586,9 @@ primary         : primary0
                     {
                       $$ = node_call_new(NULL, NULL, NULL, $1);
                     }
-                | identifier block
+                | keyword_block identifier block
                     {
-                      $$ = node_call_new(NULL, node_ident_new($1), NULL, $2);
+                      $$ = node_call_new(NULL, node_ident_new($2), NULL, $3);
                     }
                 | identifier '(' opt_args ')' opt_block
                     {
@@ -635,17 +668,18 @@ f_args          : identifier
                     }
                 ;
 
-opt_terms       : /* none */
-                | terms
+opt_terms       : terms
                 ;
 
 terms           : term
                 | terms term {yyerrok;}
+                | /* none */
                 ;
 
-term            : ';' {yyerrok;}
-                | '\n'
+term            : ' ' 
                 | op_and
+                | ';'
+                | '\n'
                 ;
 %%
 //#define yylval  (*((YYSTYPE*)(p->lval)))
@@ -701,12 +735,14 @@ ungetNextChar(void)
 
 /* lookup table of reserved words */
 static struct
-    { char* str;
+    { 
+      char* str;
       int tok;
     } reservedWords[MAXRESERVED]
    = {{"if",keyword_if},{"else",keyword_else},{"null",keyword_null},
       {"import",keyword_import},{"false",keyword_false},{"true",keyword_false},
-      {"break",keyword_break},{"return",keyword_return}};
+      {"break",keyword_break},{"return",keyword_return},{"goto",keyword_goto},
+      {"block",keyword_block}};
 
 /* look for existing keyword*/
 /* linear search */
@@ -731,7 +767,8 @@ List_Init(STRList *list) {
 /* Add a value to the string list */
 void 
 List_Append(STRList* list, int value) {
-    list->stringtable[list->n++] = value;
+    list->stringtable[list->n] = value;
+    list->n++;
 }
 
 
@@ -751,18 +788,18 @@ TokenType getToken(YYSTYPE* yylval){
     {
       case BEGIN:
         if(isdigit(c)) state = INNUM;
-        else if(isalpha(c)) state = INID;
+        else if(isalpha(c) || c == '_') state = INID;
         else if(c == ':') state = INASSIGN;
-        else if((c == ' ') || (c == '\t'))
-          save = FALSE;
-        else if(c == '\n')
-        {
-          linepos++;
-        }
-        else if((c == '#'))
-        { 
+        else if((c == ' ') || (c == '\t')){
            save = FALSE;
-           state = INCOMMENT;
+        }
+        else if((c == '\n') || (c == '\r')){
+          save = FALSE;
+        }
+        else if(c == '#')
+        { 
+          save = FALSE;
+          state = INCOMMENT;
         }
         else if(c == '\"'){
           state = INSTR;
@@ -827,16 +864,24 @@ TokenType getToken(YYSTYPE* yylval){
       break;
       case INCOMMENT:
         save = FALSE;
-        if(c == '#') state = BEGIN;
         if(c == EOF)
         { 
           state = FINISH;
+          result = ENDFILE;
+        }
+        else if(c == '#') 
+        {
+          state = BEGIN;
         }
       break;
       case INASSIGN:
         if(c == '='){
-          state = FINISH;
           result = op_assign;
+        }
+        else{
+          ungetNextChar();
+          save = FALSE;
+          result = ERROR;
         }
       break;
       case INNUM:
@@ -844,8 +889,8 @@ TokenType getToken(YYSTYPE* yylval){
         {
           ungetNextChar();
           save = FALSE;
-          state = FINISH;
           result = lit_number;
+          state = FINISH;
         }
       break;
       case INID:
@@ -853,23 +898,20 @@ TokenType getToken(YYSTYPE* yylval){
         {
           ungetNextChar();
           save = FALSE;
-          state = FINISH;
           result = identifier;
+          state = FINISH;
         }
       break;
       case INSTR:
-       if(c == '"')
+       if(c == '\"')
        {
          ungetNextChar();
          save = FALSE;
-         state = FINISH;
-         //printf("String Length: %d \n",yyleng);
          result = lit_string;
-         exit(1);
+         state = FINISH;
        }
        else{
         yyleng++;
-        //List_Append(List,c);
        }
       break;
       case FINISH:
@@ -896,4 +938,3 @@ yylex(YYSTYPE *yylval)
 {
   return getToken(yylval);
 }
-
