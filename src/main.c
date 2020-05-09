@@ -3,13 +3,14 @@
 #include <stdio.h>
 
 static void
-dump_node(node* np, int indent) {
+dump_node(node* np, int indent)
+{
   int i;
   for (i = 0; i < indent; i++)
     putchar(' ');
 
   if (!np) {
-    printf("NIL\n");
+    printf("NULL\n");
     return;
   }
 
@@ -75,6 +76,9 @@ dump_node(node* np, int indent) {
       break;
     case SQU_VALUE_STRING:
       printf("VALUE(STRING): %s\n", np->value.v.s);
+      break;
+    case SQU_VALUE_INT:
+      printf("VALUE(INT): %d\n",np -> value.v.i);
       break;
     case SQU_VALUE_BOOL:
       printf("VALUE(BOOL): %s\n", np->value.v.i ? "true" : "false");

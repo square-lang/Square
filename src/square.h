@@ -6,6 +6,7 @@
 
 typedef enum{
   SQU_VALUE_BOOL,          /* bool */
+  SQU_VALUE_INT,           /* int */
   SQU_VALUE_ARRAY,         /* array */
   SQU_VALUE_MAP,           /* map */
   SQU_VALUE_STRING,        /* string */
@@ -18,15 +19,16 @@ typedef enum{
 } squ_value_type;
 
 /* define data type in square */
-typedef intptr_t squ_id;
-typedef int squ_bool;
-typedef double squ_double;
-typedef char* squ_string;
+typedef intptr_t squ_id;   /* identiier */
+typedef int squ_bool;      /* bool */
+typedef int squ_int;       /* int */
+typedef double squ_double; /* double */
+typedef char* squ_string;  /* string */
 
 typedef struct {
-  int len;       /*length of the array*/
-  int max;
-  void** data;
+  int len;       /* length of the array */
+  int max;       /* max length of array */
+  void** data;   /* array's data */
 } squ_array;
 
 /* "Value" in square, include its type and value */

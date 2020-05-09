@@ -124,7 +124,7 @@ static BOOL EOF_flag = FALSE; /* corrects ungetNextChar behavior on EOF */
 /* use list to save the string value */
 typedef struct{
     squ_string stringtable;
-    int n;
+    size_t n;
 }STRList;
 
 
@@ -787,7 +787,7 @@ TokenType getToken(YYSTYPE* yylval){
   StateType state = BEGIN;
   BOOL save;
   int yyleng;
-  STRList* str_list = (STRList*)malloc(sizeof(STRList));
+  //STRList* str_list = (STRList*)malloc(sizeof(STRList));
   while(state != FINISH)
   {
     c = getNextChar();
@@ -795,13 +795,24 @@ TokenType getToken(YYSTYPE* yylval){
     switch(state)
     {
       case BEGIN:
-        if(isdigit(c)) state = INNUM;
-        else if(isalpha(c) || c == '_') state = INID;
-        else if(c == ':') state = INASSIGN;
-        else if((c == ' ') || (c == '\t')){
+        if(isdigit(c))
+        { 
+          state = INNUM;
+        }
+        else if(isalpha(c) || c == '_')
+        {
+          state = INID;
+        }
+        else if(c == ':')
+        {
+          state = INASSIGN;
+        }
+        else if((c == ' ') || (c == '\t'))
+        {
            save = FALSE;
         }
-        else if((c == '\n') || (c == '\r')){
+        else if((c == '\n') || (c == '\r'))
+        {
           save = FALSE;
         }
         else if(c == '#')
@@ -809,9 +820,10 @@ TokenType getToken(YYSTYPE* yylval){
           save = FALSE;
           state = INCOMMENT;
         }
-        else if(c == '\"'){
+        else if(c == '\"')
+        {
           state = INSTR;
-          List_Init(str_list);
+          //List_Init(str_list);
           yyleng = 0;
         }
         else
@@ -884,10 +896,12 @@ TokenType getToken(YYSTYPE* yylval){
       break;
       case INASSIGN:
         state = FINISH;
-        if(c == '='){
+        if(c == '=')
+        {
           result = op_assign;
         }
-        else{
+        else
+        {
           ungetNextChar();
           save = FALSE;
           result = ERROR;
@@ -900,6 +914,7 @@ TokenType getToken(YYSTYPE* yylval){
           save = FALSE;
           state = FINISH;
           result = lit_number;
+          yylval -> nd = node_int_new(atoi(tokenString));
         }
       break;
       case INID:
@@ -912,18 +927,13 @@ TokenType getToken(YYSTYPE* yylval){
         }
       break;
       case INSTR:
-        if(c != '\"')
-        {
-          List_Append(str_list,c);
-          ++yyleng;
-        }
-        else
+        if(c == '\"')
         {
           ungetNextChar();
           save = FALSE;
           state = FINISH;
-          squ_string s = str_list -> stringtable;
-          free(str_list);
+          //squ_string s = str_list -> stringtable;
+          //free(str_list);
           result = lit_string;
         }
       break;

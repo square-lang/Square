@@ -47,8 +47,8 @@ node_value_new(node* v)
 }
 
 squ_array*
-squ_array_new() {
-  /* TODO: error check */
+squ_array_new()
+{  
   squ_array* arr = malloc(sizeof(squ_array));
   arr->len = 0;
   arr->max = 0;
@@ -57,7 +57,8 @@ squ_array_new() {
 }
 
 void
-squ_array_add(squ_array* arr, void* data) {
+squ_array_add(squ_array* arr, void* data) 
+{
   if (arr->len == arr->max) {
     arr->max = arr->len + 10;
     arr->data = realloc(arr->data, sizeof(void*) * arr->max);
@@ -226,6 +227,17 @@ node_double_new(squ_double d)
   np->type = NODE_VALUE;
   np->value.t = SQU_VALUE_DOUBLE;
   np->value.v.d = d;
+  return np;
+}
+
+node*
+node_int_new(squ_int i)
+{
+  node* np = malloc(sizeof(node));
+
+  np -> type = NODE_VALUE;
+  np -> value.t = SQU_VALUE_INT;
+  np -> value.v.i = i;
   return np;
 }
 
@@ -427,22 +439,25 @@ node_free(node* np) {
     free(np);
     break;
   case NODE_VALUE:
-    switch (np->value.t) {
-    case SQU_VALUE_DOUBLE:
+    switch (np -> value.t) {
+    case SQU_VALUE_DOUBLE:    /* double */
       free(np);
       break;
-    case SQU_VALUE_STRING:
+    case SQU_VALUE_STRING:    /* string */
       free(np->value.v.s);
       free(np);
       break;
-    case SQU_VALUE_BOOL:
+    case SQU_VALUE_INT:       /* int */
+      free(np);
       break;
-    case SQU_VALUE_NULL:
+    case SQU_VALUE_BOOL:      /* bool */
       break;
-    case SQU_VALUE_ARRAY:
+    case SQU_VALUE_NULL:      /* null */
+      break;
+    case SQU_VALUE_ARRAY:     /* array */
       node_array_free(np);
       break;
-    case SQU_VALUE_MAP:
+    case SQU_VALUE_MAP:       /* map */
       node_map_free(np);
       break;
     default:
