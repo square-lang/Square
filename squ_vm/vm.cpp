@@ -28,6 +28,7 @@ SOFTWARE.
 **************************************************************************************/
 
 #include <iostream>
+#include <stdlib.h>
 #include "opcode.hpp"
 #include "test.h"
 
@@ -56,17 +57,20 @@ SOFTWARE.
 
 BOOL running = TRUE;
 /* Instruction pointer */
-int pc = 0;
+int ip = 0;
 /* Stack pointer */
 int sp = -1;
 
 /* Stack segment */
 int stack[stackSize];
+/* registers */
 int registers[registerSize];
+/* Code segment */
+int code[textSize];
 
 int 
 fetch() {
-  return program[pc];
+  return program[ip];
 }
 
 void 
@@ -79,7 +83,7 @@ eval(int instruction) {
     }
     case PUSH:  
     {
-        stack[++sp] = program[++pc];
+        stack[++sp] = program[++ip];
         break;
     }
     case POP: 
@@ -160,21 +164,34 @@ eval(int instruction) {
     	std::cout<<stack[sp--]<<std::endl;
     	break;
     }
+    case EQ:
+    {
+      size_t valueB = stack[sp--];
+      size_t valueA = stack[sp--];
+      stack[++sp] = (valueA == valueB) ? TRUE : FALSE;
+      break;
+    }
+    case NEQ:
+    {
+      size_t valueB = stack[sp--];
+      size_t valueA = stack[sp--];
+      stack[++sp] = (valueA != valueB) ? TRUE : FALSE;
+      break;
+    }
+    case JMP:
+    {
+      ip = code[ip++];
+      break;
+    }
   }
 }
 
 int 
 main() {
-	// allocate memory for virtual machine
-  if (!(stack = malloc(stackSize)))
-  {
-      printf("could not malloc(%d) for stack area\n", stackSize);
-      return -1;
-  }
   while(running)
   {
       eval(fetch());
-      pc++;
+      ip++;
     }
   return 0;
 }

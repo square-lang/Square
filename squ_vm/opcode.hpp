@@ -11,9 +11,20 @@ typedef enum {
   LE,
   GT,
   GE,
+  EQ,
+  NEQ,
   PUSH,
   POP,
   PRINT,
+  JMP,
+  JMPT,      /* Jmp true */
+  JMPF,      /* Jmp false */
+  LOAD,
+  LOADG,
+  STORE,
+  STOREG,
+  CALL,
+  RET,
   END
 } InstructionSet;
 
