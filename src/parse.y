@@ -127,47 +127,49 @@ strndup_(const char *str, size_t chars)
 }
 
 /*
-**  In parse.tab.h:
-**  Tokens:  
-**  #ifndef YYTOKENTYPE
-**  # define YYTOKENTYPE
-**  enum yytokentype {
-**     keyword_if = 258,
-**     keyword_else = 259,
-**     keyword_break = 260,
-**     keyword_return = 261,
-**     keyword_null = 262,
-**     keyword_true = 263,
-**     keyword_false = 264,
-**     keyword_import = 265,
-**     op_add = 266,
-**     op_sub = 267,
-**     op_mul = 268,
-**     op_div = 269,
-**     op_mod = 270,
-**     op_eq = 271,
-**     op_neq = 272,
-**     op_lt = 273,
-**     op_le = 274,
-**     op_gt = 275,
-**     op_ge = 276,
-**     op_and = 277,
-**     op_or = 278,
-**     op_bar = 279,
-**     op_amper = 280,
-**     op_next = 281,
-**     op_assign = 282,
-**     ERROR = 283,
-**     lit_number = 284,
-**     lit_string = 285,
-**     lit_true = 286,
-**     lit_false = 287,
-**     lit_null = 288,
-**     identifier = 289,
-**     op_LOWEST = 290,
-**     op_HIGHEST = 291
-**   };
-**  #endif
+   enum yytokentype {
+     keyword_if = 258,
+     keyword_else = 259,
+     keyword_break = 260,
+     keyword_return = 261,
+     keyword_null = 262,
+     keyword_true = 263,
+     keyword_false = 264,
+     keyword_import = 265,
+     keyword_goto = 266,
+     keyword_block = 267,
+     op_add = 268,
+     op_sub = 269,
+     op_mul = 270,
+     op_div = 271,
+     op_mod = 272,
+     op_eq = 273,
+     op_neq = 274,
+     op_lt = 275,
+     op_le = 276,
+     op_gt = 277,
+     op_ge = 278,
+     op_and = 279,
+     op_or = 280,
+     op_bar = 281,
+     op_amper = 282,
+     op_next = 283,
+     op_assign = 284,
+     op_lp = 285,
+     op_rp = 286,
+     op_flp = 287,
+     op_frp = 288,
+     ERROR = 289,
+     ENDFILE = 290,
+     lit_number = 291,
+     lit_string = 292,
+     lit_true = 293,
+     lit_false = 294,
+     lit_null = 295,
+     identifier = 296,
+     op_LOWEST = 297,
+     op_HIGHEST = 298
+   };
 */
 
 #define TokenType YYTOKENTYPE
@@ -183,6 +185,7 @@ typedef struct
 
 void List_Init(STRList *list);
 void List_Append(STRList* list, int value);
+
 
 %}
 
@@ -848,6 +851,70 @@ List_Append(STRList* list, int value) {
   list->stringtable[list->n] = (squ_string)value;
 }
 
+static squ_int
+string_escape(char* s, size_t len)
+{
+  char* t = s;
+  char* tend = t + len;
+  char* p = s;
+
+  while (t < tend) {
+    switch (*t) {
+    case '\\':
+      t++;
+      if (t == tend) break;
+      switch (*t) {
+      case 'n':
+        *p++ = '\n'; break;
+      case 'r':
+        *p++ = '\r'; break;
+      case 't':
+        *p++ = '\t'; break;
+      case 'e':
+        *p++ = 033; break;
+      case '0':
+        *p++ = '\0'; break;
+      case 'x':
+        {
+          unsigned char c = 0;
+          char* xend = t+3;
+
+          t++;
+          while (t < tend && t < xend) {
+            switch (*t) {
+            case '0': case '1': case '2': case '3': case '4':
+            case '5': case '6': case '7': case '8': case '9':
+              c *= 16;
+              c += *t - '0';
+              break;
+            case 'a': case 'b': case 'c':
+            case 'd': case 'e': case 'f':
+              c *= 16;
+              c += *t - 'a' + 10;
+              break;
+            default:
+              xend = t;
+              break;
+            }
+            t++;
+          }
+          *p++ = (char)c;
+          t--;
+        }
+        break;
+      default:
+        *p++ = *t; break;
+      }
+      t++;
+      break;
+    default:
+      *p++ = *t++;
+      break;
+    }
+  }
+  return (squ_int)(p - s);
+}
+
 
 TokenType getToken(YYSTYPE* yylval){
   int result;
@@ -891,6 +958,7 @@ TokenType getToken(YYSTYPE* yylval){
         else if(c == '\"')
         {
           state = INSTR;
+          yyleng = 0;
         }
         else
         {
@@ -996,7 +1064,7 @@ TokenType getToken(YYSTYPE* yylval){
         }
       break;
       case INID:
-        if(!isalpha(c))
+        if(!isalpha(c) || (c != '_'))
         {
           ungetNextChar();
           save = FALSE;
@@ -1005,13 +1073,20 @@ TokenType getToken(YYSTYPE* yylval){
         }
       break;
       case INSTR:
-        if(c == '\"')
+        if((c != '\"'))
+        {
+            yyleng++; 
+        }
+        else
         {
           ungetNextChar();
           state = FINISH;
           save = FALSE;
           result = lit_string;
-        }
+          squ_string s = strndup_(tokenString + 1, yyleng);
+          yylval -> nd = node_string_new(s);
+   		  free(s);
+        }      
       break;
       case FINISH:
       default:

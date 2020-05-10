@@ -17,10 +17,9 @@ A program to print "Hello World" on the screen.
 cat("Hello World!")
 ```
 ## Contribution
-
+Welcome to pull a request!
 ## License
 MIT license 2020 Stepfen Shawn
 ## The Author
-Square was designed and developed by Stepfen Shawn in 2020.
-#### Email:    
-stepfencurryxiao@gmail.com
+Square was designed and developed by [Stepfen Shawn](https://github.com/StepfenShawn) in 2020.  
+[Linkedin](https://www.linkedin.com/in/shawn-stepfen-94301b193/)  
