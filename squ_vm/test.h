@@ -1,4 +1,5 @@
-const int program[] = {
+const int 
+code[] = {
     PUSH, 5,
     PUSH, 4,
     SUB,

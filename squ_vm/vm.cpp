@@ -31,6 +31,7 @@ SOFTWARE.
 #include <stdlib.h>
 #include "opcode.hpp"
 #include "test.h"
+//#include "func.hpp"
 
 #define stackSize 256
 #define textSize 256
@@ -65,17 +66,23 @@ int sp = -1;
 int stack[stackSize];
 /* registers */
 int registers[registerSize];
-/* Code segment */
-int code[textSize];
+/* Address */
+int addr;
 
 int 
-fetch() {
-  return program[ip];
+fetch()
+{
+  return code[ip];
 }
 
 void 
-eval(int instruction) {
-  switch (instruction) {
+eval(int instruction) 
+{
+  /*
+  Context ctx = new Context(NULL,0,new func(0,0,0));
+  */
+  switch (instruction) 
+  {
     case END: 
     {
         running = FALSE;
@@ -83,7 +90,7 @@ eval(int instruction) {
     }
     case PUSH:  
     {
-        stack[++sp] = program[++ip];
+        stack[++sp] = code[++ip];
         break;
     }
     case POP: 
@@ -183,11 +190,47 @@ eval(int instruction) {
       ip = code[ip++];
       break;
     }
+    case JMPT:
+    {
+      addr = code[ip++];
+      if(stack[sp--] == TRUE)
+      {
+        ip = addr;
+      }
+      break;
+    }
+    case JMPF:
+    {
+      addr = code[ip++];
+      if(stack[sp--] == FALSE)
+      {
+        ip = addr;
+      }
+      break; 
+    }
+    case LOAD:
+    {
+      /*
+      register = code[ip++];
+      stack[++sp] = (ctx.getLocals())[register];
+      */
+      break;
+    }
+    case RET:
+    {
+      /*
+      ip = ctx.getReturn_ip();
+      ctx = ctx.getCtx();
+      */
+      break;
+    }
+    instruction = code[ip];
   }
 }
 
 int 
-main() {
+main() 
+{
   while(running)
   {
       eval(fetch());

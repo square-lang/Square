@@ -5,7 +5,7 @@ class func
 {
 private:
     int Args;       /* Number of args */
-    int Locats;   /* Number of locals */
+    int Locals;   /* Number of locals */
     int addr;       /* Address */
 
 public:
@@ -19,7 +19,7 @@ public:
 func::func(int Args,int Locals,int addr)
 {
     this -> Args = Args;
-    this -> Locats = Locals;
+    this -> Locals = Locals;
     this -> addr = addr;
 }
 
@@ -36,7 +36,7 @@ func::getLocals()
 }
 
 int
-func::getAddress()
+func::getAddr()
 {
     return this -> addr;
 }
