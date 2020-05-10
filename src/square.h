@@ -60,8 +60,8 @@ typedef struct {
 
 typedef struct parser_state {
   int nerr;
-  void *lval;
-  const char *file_name;
+  void* lval;
+  const char* file_name;
   int lineno;
   int tline;
   squ_ctx ctx;

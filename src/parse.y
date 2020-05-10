@@ -272,6 +272,12 @@ static void yywarnning(parser_state* p,const char* s);
         op_amper
         op_next
         op_assign
+        op_lp
+        op_rp
+        op_flp
+        op_frp
+
+%token
         ERROR
         ENDFILE
 
@@ -533,9 +539,9 @@ opt_elsif       : /* none */
                     {
                       $$ = NULL;
                     }
-                | opt_elsif keyword_else keyword_if condition '{' stmt_seq '}'
+                | opt_elsif keyword_else keyword_if op_lp condition op_rp op_flp stmt_seq op_frp
                     {
-                      $$ = node_if_new($4, $6, NULL);
+                      $$ = node_if_new($5, $8, NULL);
                     }
                 ;
 
@@ -543,7 +549,7 @@ opt_else        : opt_elsif
                     {
                       $$ = NULL;
                     }
-                | opt_elsif keyword_else '{' stmt_seq '}'
+                | opt_elsif keyword_else op_flp stmt_seq op_frp
                     {
                       $$ = $4;
                     }
@@ -576,18 +582,12 @@ grade           : /* none */
                 ;
 
 primary0        : lit_number
-                    {
-                        $$ = $1;
-                    }
                 | lit_string
-                    {
-                        $$ = $1;
-                    }
                 | identifier
                     {
                       $$ = node_ident_new($1);
                     }
-                | '(' expr ')'
+                | op_lp expr op_rp
                     {
                        $$ = $2;
                     }
@@ -607,9 +607,9 @@ primary0        : lit_number
                     {
                       $$ = node_map_of(NULL);
                     }
-                | keyword_if condition '{' stmt_seq '}' opt_else
+                | keyword_if op_lp condition op_rp op_flp stmt_seq op_frp opt_else
                     {
-                      $$ = node_if_new($2, $4, $6);
+                      $$ = node_if_new($3, $6, $8);
                     }
                 | keyword_null
                     {
@@ -629,11 +629,11 @@ cond            : primary0
                     {
                        $$ = $1;
                     }
-                | identifier '(' opt_args ')'
+                | identifier op_lp opt_args op_rp
                     {
                       $$ = node_call_new(NULL, node_ident_new($1), $3, NULL);
                     }
-                | cond '.' identifier '(' opt_args ')'
+                | cond '.' identifier op_lp opt_args op_rp
                     {
                       $$ = node_call_new(NULL, node_ident_new($3), $5, NULL);
                     }
@@ -652,11 +652,11 @@ primary         : primary0
                     {
                       $$ = node_call_new(NULL, node_ident_new($2), NULL, $3);
                     }
-                | identifier '(' opt_args ')' opt_block
+                | identifier op_lp opt_args op_rp opt_block
                     {
                       $$ = node_call_new(NULL, node_ident_new($1), $3, $5);
                     }
-                | primary '.' identifier '(' opt_args ')' opt_block
+                | primary '.' identifier op_lp opt_args op_rp opt_block
                     {
                       $$ = node_call_new($1, node_ident_new($3), $5, $7);
                     }
@@ -698,11 +698,11 @@ opt_block       : /* none */
                     }
                 ;
 
-block           : '{' bparam stmt_seq '}'
+block           : op_flp bparam stmt_seq op_frp
                     {
                       $$ = node_block_new($2, $3);
                     }
-                | '{' stmt_seq '}'
+                | op_flp stmt_seq op_frp
                     {
                       $$ = node_block_new(NULL, $2);
                     }
@@ -944,6 +944,18 @@ TokenType getToken(YYSTYPE* yylval){
             break;
             case '->':
               result = op_next;
+            break;
+            case '(':
+              result = op_lp;
+            break;
+            case ')':
+              result = op_rp;
+            break;
+            case '{':
+              result = op_flp;
+            break;
+            case '}':
+              result = op_frp;
             break;
           }
         }

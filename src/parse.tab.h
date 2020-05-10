@@ -73,16 +73,20 @@ extern int yydebug;
      op_amper = 282,
      op_next = 283,
      op_assign = 284,
-     ERROR = 285,
-     ENDFILE = 286,
-     lit_number = 287,
-     lit_string = 288,
-     lit_true = 289,
-     lit_false = 290,
-     lit_null = 291,
-     identifier = 292,
-     op_LOWEST = 293,
-     op_HIGHEST = 294
+     op_lp = 285,
+     op_rp = 286,
+     op_flp = 287,
+     op_frp = 288,
+     ERROR = 289,
+     ENDFILE = 290,
+     lit_number = 291,
+     lit_string = 292,
+     lit_true = 293,
+     lit_false = 294,
+     lit_null = 295,
+     identifier = 296,
+     op_LOWEST = 297,
+     op_HIGHEST = 298
    };
 #endif
 
@@ -102,7 +106,7 @@ typedef union YYSTYPE
 
 
 /* Line 2058 of yacc.c  */
-#line 106 "parse.tab.h"
+#line 110 "parse.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

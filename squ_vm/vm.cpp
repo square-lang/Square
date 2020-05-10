@@ -1,6 +1,6 @@
-/*******************************************************
+/*********************************************************************************
 
-vm.cpp vm for square
+vm.cpp: vm for square
 
 Created at May 9 21:45:47 2020
 Author: Stepfen Shawn
@@ -25,7 +25,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-*******************************************************/
+**************************************************************************************/
 
 #include <iostream>
 #include "opcode.hpp"
@@ -166,15 +166,15 @@ eval(int instruction) {
 int 
 main() {
 	// allocate memory for virtual machine
-    if (!(stack = malloc(stackSize)))
-    {
-        printf("could not malloc(%d) for stack area\n", stackSize);
-        return -1;
+  if (!(stack = malloc(stackSize)))
+  {
+      printf("could not malloc(%d) for stack area\n", stackSize);
+      return -1;
+  }
+  while(running)
+  {
+      eval(fetch());
+      pc++;
     }
-    while(running)
-    {
-        eval(fetch());
-        pc++;
-    }
-  	return 0;
+  return 0;
 }

@@ -26,6 +26,7 @@ typedef struct {
 } node;
 
 typedef struct {
+  node_type type;
   node* key;
   node* value;
 } node_pair;
@@ -33,28 +34,33 @@ typedef struct {
 typedef squ_array node_array;
 
 typedef struct {
+  node_type type;
   node* cond;
   node* stmt_seq;
   node* opt_else;
 } node_if;
 
 typedef struct {
+  node_type type;
   node* lhs;
   node* rhs;
 } node_let;
 
 typedef struct {
+  node_type type;
   node* lhs;
   char* op;
   node* rhs;
 } node_op;
 
 typedef struct {
+  node_type type;
   node* args;
   node* stmt_seq;
 } node_block;
 
 typedef struct {
+  node_type type;
   node* cond;
   node* ident;
   node* args;
@@ -62,10 +68,12 @@ typedef struct {
 } node_call;
 
 typedef struct {
+  node_type type;
   node* rv;
 } node_return;
 
 typedef struct {
+  node_type type;
   squ_id name;
 } node_import;
 
