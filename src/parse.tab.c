@@ -3015,7 +3015,7 @@ TokenType getToken(YYSTYPE* yylval){
           save = FALSE;
           state = INCOMMENT;
         }
-        else if(c == '\"')
+        else if(c == '"')
         {
           state = INSTR;
           yyleng = 0;
@@ -3133,19 +3133,12 @@ TokenType getToken(YYSTYPE* yylval){
         }
       break;
       case INSTR:
-        if((c != '\"'))
-        {
-            yyleng++; 
-        }
-        else
+        if(c == '"')
         {
           ungetNextChar();
-          state = FINISH;
           save = FALSE;
+          state = FINISH;
           result = lit_string;
-          squ_string s = strndup_(tokenString + 1, yyleng);
-          yylval -> nd = node_string_new(s);
-   		  free(s);
         }      
       break;
       case FINISH:
