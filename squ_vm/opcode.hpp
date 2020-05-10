@@ -1,3 +1,6 @@
+#ifndef OPCODE_H
+#define OPCODE_H
+
 typedef enum {
   ADD,
   SUB,
@@ -13,3 +16,5 @@ typedef enum {
   PRINT,
   END
 } InstructionSet;
+
+#endif

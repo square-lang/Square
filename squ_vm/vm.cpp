@@ -91,9 +91,9 @@ eval(int instruction) {
     {
 	    size_t valueB = stack[sp--];
 	    size_t valueA = stack[sp--];
-      	size_t result = valueA + valueB;
-      	stack[++sp] = result;
-      	break;
+      size_t result = valueA + valueB;
+      stack[++sp] = result;
+      break;
     }
     case SUB:
     {
