@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/square-lang/Square.svg?branch=master)](https://travis-ci.org/square-lang/Square)  
 ## What is Square
 Square is a powerful programming language.
 ### Features of Square
