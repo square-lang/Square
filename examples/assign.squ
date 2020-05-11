@@ -5,5 +5,4 @@ b := false
 # Try: null #
 c := null
 # Try: String #
-# Can not run string yet  #
-# S := "String" #
+S := "String"

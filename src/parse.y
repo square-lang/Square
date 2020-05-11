@@ -174,18 +174,6 @@ strndup_(const char *str, size_t chars)
 
 #define TokenType YYTOKENTYPE
 
-/* define the string list */
-/* use list to save the string value */
-typedef struct
-{
-    squ_string stringtable;
-    size_t n;
-}STRList;
-
-
-void List_Init(STRList *list);
-void List_Append(STRList* list, int value);
-
 
 %}
 
@@ -813,6 +801,19 @@ ungetNextChar(void)
     linepos--;
 }
 
+void
+catToken(int c,int tokenStringIndex)
+{
+  if(tokenStringIndex < MAXTOKENLEN - 1)
+  {
+    tokenString[++tokenStringIndex] = c;
+  }
+  else
+  {
+    
+  }
+}
+
 /* lookup table of reserved words */
 static struct
     { 
@@ -837,18 +838,14 @@ reservedLookup(char* s)
   return identifier;
 }
 
-/* init the list */
-void 
-List_Init(STRList *list) { 
-  list->n = 0;
-}
 
-/* Like append() in python */
-/* Add a value to the string list */
-void 
-List_Append(STRList* list, int value) {
-  list -> n++;
-  list->stringtable[list->n] = (squ_string)value;
+BOOL 
+isChar(int c)
+{
+    if((c >=35 &&c <= 126)||(c == ' ')||(c =='!')) 
+      return TRUE;
+    else
+      return FALSE;
 }
 
 static squ_int
@@ -955,10 +952,10 @@ TokenType getToken(YYSTYPE* yylval){
           save = FALSE;
           state = INCOMMENT;
         }
-        else if(c == '"')
+        else if((c == '\"') || (c == '\''))
         {
-          state = INSTR;
           yyleng = 0;
+          state = INSTR;
         }
         else
         {
@@ -1073,13 +1070,23 @@ TokenType getToken(YYSTYPE* yylval){
         }
       break;
       case INSTR:
-        if(c == '"')
+        if((c == '"') || (c == '\''))
         {
-          ungetNextChar();
-          save = FALSE;
           state = FINISH;
+          save = FALSE;
+          squ_string s = strndup_(tokenString,yyleng + 1);
+          if(s[0] == '"' || s[0] == '\'')
+          {
+            s[0] = "";
+          }
+          yylval -> nd = node_string_new(s);
           result = lit_string;
-        }      
+        }
+        else
+        {
+          catToken(c,tokenStringIndex);
+          yyleng++;
+        }
       break;
       case FINISH:
       default:
