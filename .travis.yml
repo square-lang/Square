@@ -1,4 +1,6 @@
-language: c
+language: 
+- c
+- cpp
 dist: bionic
 sudo: required
 complie:
@@ -9,4 +11,6 @@ install:
 
 script:
 - gcc src/parse.tab.c src/main.c src/node.c
-- ./a.exe ../examples/HelloWorld.squ
+
+script:
+- g++ squ_vm/vm.cpp
