@@ -9,4 +9,3 @@ install:
 
 script:
 - gcc src/parse.tab.c src/main.c src/node.c
-- ./a.exe ../examples/HelloWorld.squ
