@@ -1,6 +1,5 @@
 language: 
 - c
-- cpp
 dist: bionic
 sudo: required
 complie:
@@ -11,9 +10,3 @@ install:
 
 script:
 - gcc src/parse.tab.c src/main.c src/node.c
-<<<<<<< HEAD
-
-script:
-- g++ squ_vm/vm.cpp
-=======
->>>>>>> e48d5d23f954eaa1124064bf1f57f7cd17c03bcd
