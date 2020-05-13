@@ -350,7 +350,6 @@ stmt            : var op_assign expr
                     {
                       $$ = node_break_new();
                     }
-                | keyword_func identifier op_lp opt_args op_rp opt_block
                 | expr
                     {
                       $$ = $1;
@@ -648,6 +647,10 @@ primary         : primary0
                 | identifier op_lp opt_args op_rp opt_block
                     {
                       $$ = node_call_new(NULL, node_ident_new($1), $3, $5);
+                    }
+                | keyword_func identifier op_lp opt_args op_rp opt_block
+                    {
+
                     }
                 | primary '.' identifier op_lp opt_args op_rp opt_block
                     {
@@ -1108,6 +1111,7 @@ TokenType getToken(YYSTYPE* yylval){
   }
   return result;
 }
+
 
 static int
 yylex(YYSTYPE *yylval)

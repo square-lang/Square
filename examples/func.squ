@@ -1,4 +1,6 @@
+# define a function "hello" #
 func hello()
 {
-    
+    # Print the "This is a function" on the screen #
+    cat("This is a function!") 
 }

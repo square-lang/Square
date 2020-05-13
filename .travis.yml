@@ -9,9 +9,4 @@ install:
 - sudo apt update
 
 script:
-<<<<<<< HEAD
 - gcc src/parse.tab.c src/main.c src/node.c
-=======
-- gcc src/parse.tab.c src/main.c src/node.c
-- g++ squ_vm/vm.cpp
->>>>>>> 81508f2ea714f062672ff2218e7f52a499c747f0

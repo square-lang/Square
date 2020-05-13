@@ -1,3 +1,9 @@
-if(a == 0){
-
+# Note: if stmt can not work now  #
+if(a == 0)
+{
+    cat("a is eq 0")
+}
+else
+{
+    cat("a is neq 0")
 }
