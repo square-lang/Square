@@ -77,7 +77,7 @@ typedef enum
 
 #define MAXTOKENLEN 80
 
-#define MAXRESERVED 11
+#define MAXRESERVED 12
 
 /* lexeme of identifier or reserved word */
 char tokenString[MAXTOKENLEN+1];
@@ -246,6 +246,8 @@ static void yywarnning(parser_state* p,const char* s);
         keyword_goto
         keyword_block
         keyword_func
+        keyword_class
+
 %token
         op_add
         op_sub
@@ -346,6 +348,13 @@ stmt            : var op_assign expr
                       $$ = node_import_new($2);
                     }
                 | stmt op_next stmt op_next stmt
+                  {
+
+                  }
+                | keyword_class identifier opt_block
+                  {
+
+                  }
                 | keyword_break
                     {
                       $$ = node_break_new();
@@ -828,7 +837,7 @@ static struct
    = {{"if",keyword_if},{"else",keyword_else},{"null",keyword_null},
       {"import",keyword_import},{"false",keyword_false},{"true",keyword_false},
       {"break",keyword_break},{"return",keyword_return},{"goto",keyword_goto},
-      {"block",keyword_block},{"func",keyword_func}};
+      {"block",keyword_block},{"func",keyword_func},{"class",keyword_class}};
 
 /* look for existing keyword*/
 /* linear search */

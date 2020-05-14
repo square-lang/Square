@@ -1,0 +1,12 @@
+# define a "Student" Class #
+class Student
+{
+    cat("This is a class")
+    func hello()
+    {
+
+    }
+}
+
+# Call the hello function #
+Student.Hello()
