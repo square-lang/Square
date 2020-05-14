@@ -9,4 +9,8 @@ install:
 - sudo apt update
 
 script:
+<<<<<<< HEAD
 - gcc src/parse.tab.c src/main.c src/node.c
+=======
+- gcc src/parse.tab.c src/main.c src/node.c
+>>>>>>> 30395c91bb78e3e43c7cd7917b129b320d892f48
