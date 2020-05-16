@@ -40,10 +40,12 @@
 
 #include "square.h"
 #include "node.h"
+#include "../squ_vm/opcode.h"
 
 #include <string.h>
 #include <ctype.h>
-#include <malloc.h> 
+#include <malloc.h>
+#include <assert.h>
 
 extern FILE *yyin, *yyout;
 extern int yyparse(parser_state*);
@@ -76,7 +78,7 @@ typedef enum
 }StateType;
 
 #define MAXTOKENLEN 80
-
+#define MAXFUNCNAME 50
 #define MAXRESERVED 12
 
 /* lexeme of identifier or reserved word */
@@ -126,6 +128,7 @@ strndup_(const char *str, size_t chars)
     return buffer;
 }
 
+
 /*
    enum yytokentype {
      keyword_if = 258,
@@ -174,10 +177,39 @@ strndup_(const char *str, size_t chars)
 
 #define TokenType YYTOKENTYPE
 
+/* Type of an expr */
+int expr_t;
+
+typedef struct
+{
+  squ_int *vm_l;     /* A list to save the opcode */
+  squ_int length;    /* Length of the list */
+}List;
+
+/* Init the list */
+void 
+Vm_List_Init(List* list)
+{
+  list->length = 0;
+}
+
+/* Add a opcode to the list */
+void 
+Vm_List_Append(List* list, squ_int opcode)
+{
+  list->vm_l[list->length] = opcode;
+}
+
+/* New a vm list */
+List* vm_list;
+/* Init the list of vm  */
+/* Vm_List_Init(vm_list); */
 
 %}
 
 %language "C"
+
+/* Types/values in association to grammar symbols. */
 
 %union {
   node* nd;
@@ -228,10 +260,12 @@ strndup_(const char *str, size_t chars)
 %parse-param {parser_state *p}
 
 %{
+
 static int yylex(YYSTYPE *lval);
 static void yyerror(parser_state* p, const char* s);
 static int yywarp(void);
 static void yywarnning(parser_state* p,const char* s);
+
 %}
 
 %token
@@ -375,6 +409,10 @@ var             : identifier
 expr            : expr op_add expr
                     {
                       $$ = node_op_new("+", $1, $3);
+                      switch($$ -> type)
+                      {
+
+                      }
                     }
                 | expr op_sub expr
                     {
@@ -834,16 +872,25 @@ static struct
       char* str;
       int tok;
     } reservedWords[MAXRESERVED]
-   = {{"if",keyword_if},{"else",keyword_else},{"null",keyword_null},
-      {"import",keyword_import},{"false",keyword_false},{"true",keyword_false},
-      {"break",keyword_break},{"return",keyword_return},{"goto",keyword_goto},
-      {"block",keyword_block},{"func",keyword_func},{"class",keyword_class}};
+   = {{"if",keyword_if},
+      {"else",keyword_else},
+      {"null",keyword_null},
+      {"import",keyword_import},
+      {"false",keyword_false},
+      {"true",keyword_false},
+      {"break",keyword_break},
+      {"return",keyword_return},
+      {"goto",keyword_goto},
+      {"block",keyword_block},
+      {"func",keyword_func},
+      {"class",keyword_class}
+    };
 
 /* look for existing keyword*/
 /* linear search */
 /* TODO: use binary search */
 static int 
-reservedLookup(char* s)
+reservedLookup(squ_string s)
 { 
   int i;
   for (i = 0;i<MAXRESERVED;i++)
@@ -933,7 +980,8 @@ TokenType getToken(YYSTYPE* yylval){
   int tokenStringIndex = 0;
   StateType state = BEGIN;
   BOOL save;
-  int yyleng;
+  int yyleng = 0;
+  int idleng = 0;
   while(state != FINISH)
   {
     c = getNextChar();
@@ -968,7 +1016,6 @@ TokenType getToken(YYSTYPE* yylval){
         }
         else if((c == '\"') || (c == '\''))
         {
-          yyleng = 0;
           state = INSTR;
         }
         else
@@ -1077,10 +1124,18 @@ TokenType getToken(YYSTYPE* yylval){
       case INID:
         if(!isalpha(c) || (c != '_'))
         {
+          int i;
           ungetNextChar();
           save = FALSE;
           state = FINISH;
           result = identifier;
+          squ_string s = strndup_(tokenString,idleng);
+          node_ident_new(s);
+        }
+         else
+        {
+          catToken(c,tokenStringIndex);
+          idleng++;
         }
       break;
       case INSTR:
@@ -1089,9 +1144,13 @@ TokenType getToken(YYSTYPE* yylval){
           state = FINISH;
           save = FALSE;
           squ_string s = strndup_(tokenString,yyleng + 1);
-          if(s[0] == '"' || s[0] == '\'')
+          if(s[0] == '\'' || s[0] == '\"')
           {
-            s[0] = "";
+            int i;
+            for(i = 0; i < yyleng + 1;i++)
+            {
+              s[i] = s[i + 1];
+            }
           }
           yylval -> nd = node_string_new(s);
           result = lit_string;
@@ -1126,4 +1185,287 @@ static int
 yylex(YYSTYPE *yylval)
 {
   return getToken(yylval);
+}
+
+squ_value* node_expr(squ_ctx*, node*);
+
+squ_value*
+node_expr_stmt(squ_ctx* ctx, node* np)
+{
+  int i;
+  node_array* arr = np->value.v.p;
+  squ_value* v = NULL;
+  for (i = 0; i < arr->len; i++) {
+    if (ctx->exc != NULL) {
+      return NULL;
+    }
+    
+    v = node_expr(ctx, arr->data[i]);
+  }
+  return v;
+}
+
+squ_value*
+node_expr(squ_ctx* ctx, node* np)
+{
+  if (ctx->exc != NULL) {
+    return NULL;
+  }
+
+  if (np == NULL) {
+    return NULL;
+  }
+
+  switch (np->type) {
+/*
+  case NODE_ARGS:
+    break;
+  case NODE_EMIT:
+    break;
+  case NODE_IDENT:
+    break;
+*/
+  case NODE_IF:
+    {
+      node_if* nif = np->value.v.p;
+      squ_value* v = node_expr(ctx, nif->cond);
+      if (ctx->exc != NULL) {
+        return NULL;
+      }
+      if (v->t == SQU_VALUE_NULL || v->v.p == NULL ||
+          (v->t == SQU_VALUE_STRING && *v->v.s == 0)) {
+        if (nif->opt_else != NULL)
+          node_expr_stmt(ctx, nif->opt_else);
+      } else {
+        node_expr_stmt(ctx, nif->stmt_seq);
+      }
+    }
+    break;
+  case NODE_OP:
+    {
+      node_op* nop = np->value.v.p;
+      squ_value* lhs = node_expr(ctx, nop->lhs);
+      if (ctx->exc != NULL) 
+        return NULL;
+      if (*nop->op == '+' && *(nop->op+1) == '\0') {
+        squ_value* rhs = node_expr(ctx, nop->rhs);
+        if (ctx->exc != NULL) return NULL;
+        if (lhs->t == SQU_VALUE_STRING && rhs->t == SQU_VALUE_STRING) {
+          squ_value* new = malloc(sizeof(squ_value));
+          char *p = malloc(strlen(lhs->v.s) + strlen(rhs->v.s) + 1);
+          strcpy(p, lhs->v.s);
+          strcat(p, rhs->v.s);
+          new->t = SQU_VALUE_STRING;
+          new->v.s = p;
+          return new;
+        } else if (lhs->t == SQU_VALUE_DOUBLE && rhs->t == SQU_VALUE_DOUBLE) {
+          squ_value* new = malloc(sizeof(squ_value));
+          new->t = SQU_VALUE_DOUBLE;
+          new->v.d = lhs->v.d + rhs->v.d;
+          return new;
+        }
+      }
+      if (*nop->op == '-' && *(nop->op+1) == '\0') {
+        squ_value* rhs = node_expr(ctx, nop->rhs);
+        if (ctx->exc != NULL) 
+          return NULL;
+        if (lhs->t == SQU_VALUE_DOUBLE && rhs->t == SQU_VALUE_DOUBLE) {
+          squ_value* new = malloc(sizeof(squ_value));
+          new->t = SQU_VALUE_DOUBLE;
+          new->v.d = lhs->v.d - rhs->v.d;
+          return new;
+        }
+      }
+      if (*nop->op == '*' && *(nop->op+1) == '\0') {
+        squ_value* rhs = node_expr(ctx, nop->rhs);
+        if (ctx->exc != NULL) 
+          return NULL;
+        if (lhs->t == SQU_VALUE_DOUBLE && rhs->t == SQU_VALUE_DOUBLE) {
+          squ_value* new = malloc(sizeof(squ_value));
+          new->t = SQU_VALUE_DOUBLE;
+          new->v.d = lhs->v.d * rhs->v.d;
+          return new;
+        }
+      }
+      if (*nop->op == '/' && *(nop->op+1) == '\0') {
+        squ_value* rhs = node_expr(ctx, nop->rhs);
+        if (ctx->exc != NULL) 
+          return NULL;
+        if (lhs->t == SQU_VALUE_DOUBLE && rhs->t == SQU_VALUE_DOUBLE) {
+          squ_value* new = malloc(sizeof(squ_value));
+          new->t = SQU_VALUE_DOUBLE;
+          
+          new->v.d = lhs->v.d / rhs->v.d;
+          return new;
+        }
+      }
+      if (*nop->op == '<') {
+        squ_value* rhs = node_expr(ctx, nop->rhs);
+        if (ctx->exc != NULL) return NULL;
+        if (lhs->t == SQU_VALUE_DOUBLE && rhs->t == SQU_VALUE_DOUBLE) {
+          squ_value* new = malloc(sizeof(squ_value));
+          new->t = SQU_VALUE_BOOL;
+          if (*(nop->op+1) == '=')
+            new->v.b = lhs->v.d <= rhs->v.d;
+          else
+            new->v.b = lhs->v.d < rhs->v.d;
+          return new;
+        }
+      }
+      if (*nop->op == '>') {
+        squ_value* rhs = node_expr(ctx, nop->rhs);
+        if (ctx->exc != NULL) return NULL;
+        if (lhs->t == SQU_VALUE_DOUBLE && rhs->t == SQU_VALUE_DOUBLE) {
+          squ_value* new = malloc(sizeof(squ_value));
+          new->t = SQU_VALUE_BOOL;
+          if (*(nop->op+1) == '=')
+            new->v.b = lhs->v.d >= rhs->v.d;
+          else
+            new->v.b = lhs->v.d > rhs->v.d;
+          return new;
+        }
+      }
+      if (*nop->op == '=' && (*(nop->op+1)) == '=') {
+        squ_value* rhs = node_expr(ctx, nop->rhs);
+        if (ctx->exc != NULL) return NULL;
+        if (lhs->t == SQU_VALUE_DOUBLE && rhs->t == SQU_VALUE_DOUBLE) {
+          squ_value* new = malloc(sizeof(squ_value));
+          new->t = SQU_VALUE_BOOL;
+          new->v.b = lhs->v.d == rhs->v.d;
+          return new;
+        }
+      }
+      if (*nop->op == '!' && (*(nop->op+1)) == '=') {
+        squ_value* rhs = node_expr(ctx, nop->rhs);
+        if (ctx->exc != NULL) return NULL;
+        if (lhs->t == SQU_VALUE_DOUBLE && rhs->t == SQU_VALUE_DOUBLE) {
+          squ_value* new = malloc(sizeof(squ_value));
+          new->t = SQU_VALUE_BOOL;
+          new->v.b = lhs->v.d != rhs->v.d;
+          return new;
+        }
+      }
+      
+      squ_raise(ctx, "invalid operator");
+    }
+    break;
+  case NODE_CALL:
+    {
+      
+      node_call* ncall = np->value.v.p;
+      if (ncall->ident != NULL) {
+        khint_t k = kh_get(value, ctx->env, (char*) ncall->ident->value.v.id);
+        if (k != kh_end(ctx->env)) {
+          squ_value* v = kh_value(ctx->env, k);
+          if (v->t == SQU_VALUE_CFUNC) {
+            node_array* arr0 = ncall->args->value.v.p;
+            squ_array* arr1 = squ_array_new();
+            int i;
+            for (i = 0; i < arr0->len; i++)
+              squ_array_add(arr1, node_expr(ctx, arr0->data[i]));
+            ((squ_cfunc) v->v.p)(ctx, arr1);
+          }
+        } else {
+          squ_raise(ctx, "function not found");
+        }
+      } else {
+        node_block* nblk = ncall->blk->value.v.p;
+        node_expr_stmt(ctx, nblk->stmt_seq);
+        if (ctx->exc != NULL) {
+          squ_value* arg = ctx->exc->arg;
+          free(ctx->exc);
+          ctx->exc = NULL;
+          return arg;
+        }
+      }
+    }
+    break;
+  case NODE_RETURN:
+    {
+      node_return* nreturn = np->value.v.p;
+      ctx->exc = malloc(sizeof(squ_error));
+      ctx->exc->arg = node_expr(ctx, nreturn->rv);
+      return NULL;
+    }
+    break;
+  case NODE_VALUE:
+    return &np->value;
+    break;
+  default:
+    break;
+  }
+  return NULL;
+}
+
+squ_value*
+squ_cputs(squ_ctx* ctx, FILE* out, squ_array* args) {
+  int i;
+  for (i = 0; i < args->len; i++) {
+    squ_value* v;
+    if (i != 0)
+      fprintf(out, ", ");
+    v = args->data[i];
+    if (v != NULL) {
+      switch (v->t) {
+      case SQU_VALUE_DOUBLE:
+        fprintf(out, "%f", v->v.d);
+        break;
+      case SQU_VALUE_STRING:
+        fprintf(out, "'%s'", v->v.s);
+        break;
+      case SQU_VALUE_NULL:
+        fprintf(out, "null");
+        break;
+      case SQU_VALUE_BOOL:
+        fprintf(out, v->v.b ? "true" : "false");
+        break;
+      case SQU_VALUE_ERROR:
+        fprintf(out, "%s", v->v.s);
+        break;
+      default:
+        fprintf(out, "<%p>", v->v.p);
+        break;
+      }
+    } 
+    else 
+    {
+      fprintf(out, "null");
+    }
+  }
+  fprintf(out, "\n");
+  return NULL;
+}
+
+squ_value*
+squ_puts(squ_ctx* ctx, squ_array* args) {
+  return squ_cputs(ctx, stdout, args);
+}
+
+int
+squ_run(parser_state* p)
+{
+  int r;
+  khiter_t k;
+
+  static squ_value vputs;
+  k = kh_put(value, p->ctx.env, "puts", &r);
+  vputs.t = SQU_VALUE_CFUNC;
+  vputs.v.p = squ_puts;
+  kh_value(p->ctx.env, k) = &vputs;
+
+  node_expr_stmt(&p->ctx, (node*)p->lval);
+  if (p->ctx.exc != NULL) {
+    squ_array* arr = squ_array_new();
+    squ_array_add(arr, p->ctx.exc->arg);
+    squ_cputs(&p->ctx, stderr, arr);
+    p->ctx.exc = NULL;
+  }
+  return 0;
+}
+
+void
+squ_raise(squ_ctx* ctx, const char* msg) {
+  ctx->exc = malloc(sizeof(squ_error));
+  ctx->exc->arg = malloc(sizeof(squ_value));
+  ctx->exc->arg->v.s = strdup(msg);
 }

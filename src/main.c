@@ -259,7 +259,8 @@ main(int argc, const char** argv)
   }
 
   if (n == 0) {
-    dump_node(state.lval, 0);
+    //dump_node(state.lval, 0);
+    squ_run(&state);
   }
 
   squ_parse_free(&state);

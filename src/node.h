@@ -1,5 +1,6 @@
 #ifndef _NODE_H_
 #define _NODE_H_
+#include "square.h"
 
 typedef enum {
   NODE_ARGS,

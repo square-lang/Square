@@ -29,9 +29,8 @@ SOFTWARE.
 
 #include <iostream>
 #include <stdlib.h>
-#include "opcode.hpp"
+#include "opcode.h"
 #include "test.h"
-//#include "func.hpp"
 
 #define stackSize 256
 #define textSize 256
@@ -64,8 +63,8 @@ int sp = -1;
 
 /* Stack segment */
 int stack[stackSize];
-/* registers */
-int registers[registerSize];
+/* registers ax */
+int ax;
 /* Address */
 int addr;
 
@@ -78,9 +77,6 @@ fetch()
 void 
 eval(int instruction) 
 {
-  /*
-  Context ctx = new Context(NULL,0,new func(0,0,0));
-  */
   switch (instruction) 
   {
     case END: 
@@ -210,18 +206,12 @@ eval(int instruction)
     }
     case LOAD:
     {
-      /*
-      register = code[ip++];
-      stack[++sp] = (ctx.getLocals())[register];
-      */
+     
       break;
     }
     case RET:
     {
-      /*
-      ip = ctx.getReturn_ip();
-      ctx = ctx.getCtx();
-      */
+      
       break;
     }
     instruction = code[ip];
