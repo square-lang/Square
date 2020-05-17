@@ -636,9 +636,9 @@ grade           : /* none */
 primary0        : lit_number
                 | lit_string
                 | identifier
-                    {
-                      $$ = node_ident_new($1);
-                    }
+                  {
+                    node_ident_new($1);
+                  }
                 | op_lp expr op_rp
                     {
                        $$ = $2;
@@ -900,12 +900,12 @@ static int
 reservedLookup(squ_string s)
 { 
   int i;
-  for (i = 0;i<MAXRESERVED;i++){
+  for (i = 0;i<MAXRESERVED;i++)
     if (!strcmp(s,reservedWords[i].str))
+    {
       return reservedWords[i].tok;
-    else
-      return identifier;
-  }
+    }
+  return identifier;
 }
 
 
@@ -1130,9 +1130,8 @@ TokenType getToken(YYSTYPE* yylval){
         }
       break;
       case INID:
-        if(!isalpha(c) || (c != '_'))
+        if(!isalpha(c))
         {
-          int i;
           ungetNextChar();
           save = FALSE;
           state = FINISH;

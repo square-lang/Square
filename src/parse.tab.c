@@ -2382,8 +2382,8 @@ yyreduce:
 /* Line 1792 of yacc.c  */
 #line 639 "parse.y"
     {
-                      (yyval.nd) = node_ident_new((yyvsp[(1) - (1)].id));
-                    }
+                    node_ident_new((yyvsp[(1) - (1)].id));
+                  }
     break;
 
   case 70:
@@ -2980,12 +2980,12 @@ static int
 reservedLookup(squ_string s)
 { 
   int i;
-  for (i = 0;i<MAXRESERVED;i++){
+  for (i = 0;i<MAXRESERVED;i++)
     if (!strcmp(s,reservedWords[i].str))
+    {
       return reservedWords[i].tok;
-    else
-      return identifier;
-  }
+    }
+  return identifier;
 }
 
 
@@ -3210,9 +3210,8 @@ TokenType getToken(YYSTYPE* yylval){
         }
       break;
       case INID:
-        if(!isalpha(c) || (c != '_'))
+        if(!isalpha(c))
         {
-          int i;
           ungetNextChar();
           save = FALSE;
           state = FINISH;
