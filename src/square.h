@@ -9,6 +9,7 @@ typedef enum{
   SQU_VALUE_INT,           /* int */
   SQU_VALUE_ARRAY,         /* array */
   SQU_VALUE_MAP,           /* map */
+  SQU_VALUE_PTR,           /* point */
   SQU_VALUE_STRING,        /* string */
   SQU_VALUE_DOUBLE,        /* double */
   SQU_VALUE_FIXNUM,        /* fix number */        
@@ -19,7 +20,7 @@ typedef enum{
 } squ_value_type;
 
 /* define data type in square */
-typedef char* squ_id;   /* identiier */
+typedef intptr_t squ_id;   /* identiier */
 typedef int squ_bool;      /* bool */
 typedef int squ_int;       /* int */
 typedef double squ_double; /* double */
@@ -45,7 +46,6 @@ typedef struct {
 } squ_value;
 
 KHASH_MAP_INIT_STR(value, squ_value*)
-
 typedef khash_t(value) squ_env;
 
 typedef struct {
@@ -76,16 +76,5 @@ int squ_parse_input(parser_state*, FILE* in, const char*);
 int squ_parse_string(parser_state*, const char*);
 int squ_run(parser_state*);
 void squ_raise(squ_ctx*, const char*);
-
-/* Check values */
-squ_bool is_squ_bool();        /* BOOL check */
-squ_bool is_squ_int();         /* INT check */
-squ_bool is_squ_double();      /* DOUBLE check */
-squ_bool is_squ_func();        /* FUNCTION check */
-squ_bool is_squ_array();       /* ARRAY check */
-
-/* build-in function */
-void squ_func_def(squ_string);
-void squ_var_def(squ_string);
 
 #endif

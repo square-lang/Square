@@ -45,8 +45,8 @@ node_value_new(node* v)
 }
 
 squ_array*
-squ_array_new()
-{  
+squ_array_new() {
+  /* TODO: error check */
   squ_array* arr = malloc(sizeof(squ_array));
   arr->len = 0;
   arr->max = 0;
@@ -55,13 +55,12 @@ squ_array_new()
 }
 
 void
-squ_array_add(squ_array* arr, void* data) 
-{
+squ_array_add(squ_array* arr, void* data) {
   if (arr->len == arr->max) {
     arr->max = arr->len + 10;
     arr->data = realloc(arr->data, sizeof(void*) * arr->max);
   }
-
+  /* TODO: error check */
   arr->data[arr->len] = data;
   arr->len++;
 }
@@ -69,12 +68,8 @@ squ_array_add(squ_array* arr, void* data)
 node*
 node_array_new()
 {
-
+  /* TODO: error check */
   node* np = malloc(sizeof(node));
-  if(!(np = malloc(sizeof(node))))
-  {
-    printf("could not malloc for node_array area\n");
-  }
   np->type = NODE_VALUE;
   np->value.t = SQU_VALUE_ARRAY;
   np->value.v.p = squ_array_new();
@@ -168,8 +163,12 @@ node_let_new(node* lhs, node* rhs)
   node_let* nlet = malloc(sizeof(node_let));
   nlet->lhs = lhs;
   nlet->rhs = rhs;
-  nlet->type = NODE_LET;
-  return (node*)nlet;
+
+  node* np = malloc(sizeof(node));
+  np->type = NODE_LET;
+  np->value.t = SQU_VALUE_USER;
+  np->value.v.p = nlet;
+  return np;
 }
 
 node*
@@ -177,10 +176,14 @@ node_op_new(char* op, node* lhs, node* rhs)
 {
   node_op* nop = malloc(sizeof(node_op));
   nop->lhs = lhs;
-  nop->op = node_ident_of(op);
+  nop->op = op;
   nop->rhs = rhs;
-  nop->type = NODE_OP;
-  return (node*)nop;
+
+  node* np = malloc(sizeof(node));
+  np->type = NODE_OP;
+  np->value.t = SQU_VALUE_USER;
+  np->value.v.p = nop;
+  return np;
 }
 
 node*
@@ -189,8 +192,12 @@ node_block_new(node* args, node* stmt_seq)
   node_block* block = malloc(sizeof(node_block));
   block->args = args;
   block->stmt_seq = stmt_seq;
-  block->type = NODE_BLOCK;
-  return (node*)block;
+
+  node* np = malloc(sizeof(node));
+  np->type = NODE_BLOCK;
+  np->value.t = SQU_VALUE_USER;
+  np->value.v.p = block;
+  return np;
 }
 
 node*
@@ -201,14 +208,19 @@ node_call_new(node* cond, node* ident, node* args, node* blk)
   ncall->ident = ident;
   ncall->args = args;
   ncall->blk = blk;
-  ncall->type = NODE_CALL;
-  return (node*)ncall;
+
+  node* np = malloc(sizeof(node));
+  np->type = NODE_CALL;
+  np->value.t = SQU_VALUE_USER;
+  np->value.v.p = ncall;
+  return np;
 }
 
 node*
 node_double_new(squ_double d)
 {
   node* np = malloc(sizeof(node));
+
   np->type = NODE_VALUE;
   np->value.t = SQU_VALUE_DOUBLE;
   np->value.v.d = d;
@@ -219,9 +231,10 @@ node*
 node_int_new(squ_int i)
 {
   node* np = malloc(sizeof(node));
-  np -> type = NODE_VALUE;
-  np -> value.t = SQU_VALUE_INT;
-  np -> value.v.i = i;
+
+  np->type = NODE_VALUE;
+  np->value.t = SQU_VALUE_INT;
+  np->value.v.i = i;
   return np;
 }
 
@@ -229,6 +242,7 @@ node*
 node_string_new(squ_string s)
 {
   node* np = malloc(sizeof(node));
+
   np->type = NODE_VALUE;
   np->value.t = SQU_VALUE_STRING;
   np->value.v.s = strdup0(s);
@@ -239,6 +253,7 @@ node*
 node_string_len_new(squ_string s, size_t l)
 {
   node* np = malloc(sizeof(node));
+
   np->type = NODE_VALUE;
   np->value.t = SQU_VALUE_STRING;
   np->value.v.s = strndup0(s, l);
@@ -249,6 +264,7 @@ node*
 node_ident_new(squ_id id)
 {
   node* np = malloc(sizeof(node));
+
   np->type = NODE_IDENT;
   np->value.t = SQU_VALUE_FIXNUM;
   np->value.v.id = id;
@@ -259,7 +275,7 @@ squ_id
 node_ident_of(char* s)
 {
   /* TODO: get id of the identifier which named as s */
-  return (squ_id) strdup0(s);
+  return (squ_id)strdup0(s);
 }
 
 node*
@@ -290,8 +306,12 @@ node_if_new(node* cond, node* stmt_seq, node* opt_else)
   nif->cond = cond;
   nif->stmt_seq = stmt_seq;
   nif->opt_else = opt_else;
-  nif->type = NODE_IF;
-  return (node*)nif;
+
+  node* np = malloc(sizeof(node));
+  np->type = NODE_IF;
+  np->value.t = SQU_VALUE_USER;
+  np->value.v.p = nif;
+  return np;
 }
 
 node*
@@ -309,8 +329,14 @@ node_import_new(squ_id name)
 {
   node_import* nimp = malloc(sizeof(nimp));
   nimp -> name = name;
-  nimp -> type = NODE_IMPORT;
-  return (node*)nimp;
+  
+  node* np = malloc(sizeof(node));
+  np -> type = NODE_IMPORT;
+  np -> value.t = SQU_VALUE_USER;
+  np -> value.v.p = nimp;
+  np -> value.v.id = nimp -> name;
+
+  return np;
 }
 
 node*
