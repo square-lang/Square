@@ -1,3 +1,1 @@
-# Print the "Hello World" on the screen! #
-cat("Hello World!")
-# TODO: output the "Hello World" #
+puts("Hello World!")

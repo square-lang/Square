@@ -128,6 +128,19 @@ strndup_(const char *str, size_t chars)
     return buffer;
 }
 
+char * copyString(char * s)
+{ int n;
+  char * t;
+  if (s==NULL) return NULL;
+  n = strlen(s)+1;
+  t = malloc(n);
+  if (t==NULL)
+    printf("Out of memory error at line %d\n",lineno);
+  else strcpy(t,s);
+  return t;
+}
+
+
 
 /*
    enum yytokentype {
@@ -402,7 +415,7 @@ stmt            : var op_assign expr
 
 var             : identifier
                     {
-                        $$ = node_ident_new($1);
+                        //$$ = node_ident_new((squ_id)copyString(tokenString));
                     }
                 ;
 
@@ -1420,7 +1433,7 @@ node_expr(squ_ctx* ctx, node* np)
         } 
         else 
         {
-          squ_raise(ctx, "function not found");
+          squ_raise(ctx, "function not found!");
         }
       } else {
         node_block* nblk = ncall->blk->value.v.p;
@@ -1480,7 +1493,8 @@ squ_cputs(squ_ctx* ctx, FILE* out, squ_array* args) {
         fprintf(out,"<%p>",v->v.p);
         break;
       default:
-        fprintf(out, "<%p>", v->v.p);
+        fprintf(out, "<%p>\n", v->v.p);
+        fprintf(out, "%s", v->v.s);
         break;
       }
     } 
@@ -1511,7 +1525,8 @@ squ_run(parser_state* p)
   kh_value(p->ctx.env, k) = &vputs;
 
   node_expr_stmt(&p->ctx, (node*)p->lval);
-  if (p->ctx.exc != NULL) {
+  if (p->ctx.exc != NULL) 
+  {
     squ_array* arr = squ_array_new();
     squ_array_add(arr, p->ctx.exc->arg);
     squ_cputs(&p->ctx, stderr, arr);
