@@ -20,7 +20,7 @@ typedef enum{
 } squ_value_type;
 
 /* define data type in square */
-typedef intptr_t squ_id;   /* identiier */
+typedef intptr_t squ_id;   /* identifier */
 typedef int squ_bool;      /* bool */
 typedef int squ_int;       /* int */
 typedef double squ_double; /* double */
