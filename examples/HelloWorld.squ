@@ -1,2 +1,4 @@
 #  Print "Hello World" on the screen #
 cat("Hello World!")
+#  You can also use print() #
+print("Hello World!")

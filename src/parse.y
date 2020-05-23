@@ -88,8 +88,7 @@ char tokenString[MAXTOKENLEN+1];
 int lineno = 1;
 
 BOOL is_ident;
-BOOL is_fname;
-
+/* function name */
 squ_string fname;
 
 static char lineBuf[BUFLEN]; /* holds the current line */
@@ -134,7 +133,8 @@ strndup_(const char *str, size_t chars)
 }
 
 squ_string copyString(char* s)
-{ int n;
+{ 
+  int n;
   char * t;
   if(s == NULL) 
     return NULL;
@@ -226,6 +226,336 @@ Vm_List_Append(List* list, squ_int opcode)
 List* vm_list;
 /* Init the list of vm  */
 /* Vm_List_Init(vm_list); */
+
+
+//#define yylval  (*((YYSTYPE*)(p->lval)))
+#include "parse.tab.h"
+
+static void
+yyerror(parser_state *p, const char *s)
+{
+  p->nerr++;
+  if (p->file_name)
+  {
+    fprintf(stderr, "%s[Error]:%d:%s\n", p->file_name, p->lineno, s);
+  }
+  else 
+  {
+    fprintf(stderr, "%s\n", s);
+  }
+  exit(1);
+}
+
+static void
+yywarnning(parser_state* p,const char* s)
+{
+  if(p->file_name)
+  {
+    printf("%s[Warnning]:%d:%s\n",p ->file_name,p->lineno,s);
+  }
+  else
+  {
+    printf("[Warnning]:%s",s);
+  }
+}
+
+static int
+yywarp(void){
+  return 1;
+}
+
+static int
+getNextChar(void)
+{ 
+  if(!(linepos < bufsize))
+  { 
+    lineno++;
+    if(fgets(lineBuf,BUFLEN-1,yyin))
+    { 
+      bufsize = strlen(lineBuf);
+      linepos = 0;
+      return lineBuf[linepos++];
+    }
+    else
+    { 
+      EOF_flag = TRUE;
+      return EOF;
+    }
+  }
+  else
+    return lineBuf[linepos++];
+}
+
+
+static void 
+ungetNextChar(void)
+{ 
+  if (!EOF_flag)
+  {
+    linepos--;
+  }
+}
+
+void
+catToken(int c,int tokenStringIndex)
+{
+  if(tokenStringIndex < MAXTOKENLEN - 1)
+  {
+    tokenString[++tokenStringIndex] = c;
+  }
+}
+
+/* lookup table of reserved words */
+static struct
+    { 
+      char* str;
+      int tok;
+    } reservedWords[MAXRESERVED]
+   = {{"if",keyword_if},{"else",keyword_else},{"null",keyword_null},
+      {"import",keyword_import},{"false",keyword_false},{"true",keyword_false},
+      {"break",keyword_break},{"return",keyword_return},{"goto",keyword_goto},
+      {"block",keyword_block},{"func",keyword_func},{"class",keyword_class}
+    };
+
+/* look for existing keyword*/
+/* linear search */
+/* TODO: use binary search */
+static int 
+reservedLookup(squ_string s,YYSTYPE* yylval)
+{ 
+  int i;
+  for (i = 0;i<MAXRESERVED;i++)
+    if (!strcmp(s,reservedWords[i].str))
+    {
+      is_ident = FALSE;
+      return reservedWords[i].tok;
+    }
+  is_ident = TRUE;
+
+  if(is_ident)
+  {
+    yylval -> nd = node_ident_new(s);
+    yylval -> id = node_ident_of(s);
+  }
+
+  return identifier;
+}
+
+static squ_int
+lex_return(squ_int c,parser_state* p)
+{
+  p->lineno = p->tline;
+  p->tline = yylineno;
+  return c;
+}
+
+#define RETURN(c) return lex_return(c,p) 
+
+TokenType getToken(YYSTYPE* yylval,parser_state* p){
+  int result;
+  int c;
+  int tokenStringIndex = 0;
+  StateType state = BEGIN;
+  BOOL save;
+  int yyleng = 0;
+  while(state != FINISH)
+  {
+    c = getNextChar();
+    save = TRUE;
+    switch(state)
+    {
+      case BEGIN:
+        if(isdigit(c))
+        { 
+          state = INNUM;
+        }
+        else if(isalpha(c))
+        {
+          state = INID;
+        }
+        else if(c == ':')
+        {
+          state = INASSIGN;
+        }
+        else if((c == ' ') || (c == '\t'))
+        {
+           save = FALSE;
+        }
+        else if((c == '\n') || (c == '\r'))
+        {
+          yylineno++;
+          save = FALSE;
+        }
+        else if(c == '#')
+        { 
+          save = FALSE;
+          state = INCOMMENT;
+        }
+        else if((c == '\"') || (c == '\''))
+        {
+          state = INSTR;
+        }
+        else
+        {
+          state = FINISH;
+          switch(c)
+          {
+            case '==':
+              result = op_eq;
+            break;
+            case '!=':
+              result = op_neq;
+            break;
+            case '<':
+              result = op_lt;
+            break;
+            case '<=':
+              result = op_le;
+            break;
+            case '>':
+              result = op_gt;
+            break;
+            case '>=':
+              result = op_ge;
+            break;
+            case '+':
+              result = op_add;
+            break;
+            case '-':
+              result = op_sub;
+            break;
+            case '*':
+              result = op_mul;
+            break;
+            case '/':
+              result = op_div;
+            break;
+            case '%':
+              result = op_mod;
+            break;
+            case '&&':
+              result = op_and;
+            break;
+            case '||':
+              result = op_or;
+            break;
+            case '&':
+              result = op_amper;
+            break;
+            case '|':
+              result = op_bar;
+            break;
+            case '->':
+              result = op_next;
+            break;
+            case '(':
+              result = op_lp;
+            break;
+            case ')':
+              result = op_rp;
+            break;
+            case '{':
+              result = op_flp;
+            break;
+            case '}':
+              result = op_frp;
+            break;
+          }
+        }
+      break;
+      case INCOMMENT:
+        save = FALSE;
+        if(c == EOF)
+        { 
+          state = FINISH;
+          result = ENDFILE;
+        }
+        else if(c == '#') 
+        {
+          state = BEGIN;
+        }
+      break;
+      case INASSIGN:
+        state = FINISH;
+        if(c == '=')
+        {
+          result = op_assign;
+        }
+        else
+        {
+          ungetNextChar();
+          save = FALSE;
+          result = ERROR;
+        }
+      break;
+      case INNUM:
+        if(!isdigit(c))
+        {
+          ungetNextChar();
+          save = FALSE;
+          state = FINISH;
+          result = lit_number;
+          yylval -> nd = node_int_new(atoi(tokenString));
+        }
+      break;
+      case INID:
+        if(!isalpha(c))
+        {
+          ungetNextChar();
+          save = FALSE;
+          state = FINISH;
+          result = identifier;
+        }
+      break;
+      case INSTR:
+        if((c == '"') || (c == '\''))
+        {
+          state = FINISH;
+          save = FALSE;
+          squ_string s = strndup_(tokenString,yyleng + 1);
+          if(s[0] == '\'' || s[0] == '\"')
+          {
+            int i;
+            for(i = 0; i < yyleng + 1;i++)
+            {
+              s[i] = s[i + 1];
+            }
+          }
+          yylval -> nd = node_string_new(s);
+          result = lit_string;
+        }
+        else
+        {
+          catToken(c,tokenStringIndex);
+          yyleng++;
+        }
+      break;
+      case FINISH:
+      default:
+        printf("Lexical Error: State : %d\n",state);
+        state = FINISH;
+        result = ERROR;
+      break;
+    }
+    if((save) && (tokenStringIndex <= MAXTOKENLEN))
+      tokenString[tokenStringIndex++] = (char)c;
+    if(state == FINISH)
+    { 
+      tokenString[tokenStringIndex] = '\0';
+      if(result == identifier)
+        result = reservedLookup(tokenString,yylval);
+    }
+  }
+  RETURN(result);
+}
+
+
+static int
+yylex(YYSTYPE *yylval,parser_state* p)
+{
+  return getToken(yylval,p);
+}
+
 
 %}
 
@@ -385,6 +715,7 @@ stmts           :
                     }
                 | error stmt
                     {
+
                     }
                 ;
 
@@ -712,7 +1043,6 @@ primary         : primary0
                     }
                 | identifier op_lp opt_args op_rp opt_block
                     {
-                      $1 = "cat";
                       $$ = node_call_new(NULL, node_ident_new($1), $3, $5);
                     }
                 | keyword_func identifier op_lp opt_args op_rp opt_block
@@ -807,406 +1137,6 @@ term            : ' '
                 | '\n'
                 ;
 %%
-//#define yylval  (*((YYSTYPE*)(p->lval)))
-#include "parse.tab.h"
-
-static void
-yyerror(parser_state *p, const char *s)
-{
-  p->nerr++;
-  if (p->file_name)
-  {
-    fprintf(stderr, "%s[Error]:%d:%s\n", p->file_name, p->lineno, s);
-  }
-  else 
-  {
-    fprintf(stderr, "%s\n", s);
-  }
-  exit(1);
-}
-
-static void
-yywarnning(parser_state* p,const char* s)
-{
-  if(p->file_name)
-  {
-    printf("%s[Warnning]:%d:%s\n",p ->file_name,p->lineno,s);
-  }
-  else
-  {
-    printf("[Warnning]:%s",s);
-  }
-}
-
-static int
-yywarp(void){
-  return 1;
-}
-
-static int
-getNextChar(void)
-{ 
-  if(!(linepos < bufsize))
-  { 
-    lineno++;
-    if(fgets(lineBuf,BUFLEN-1,yyin))
-    { 
-      bufsize = strlen(lineBuf);
-      linepos = 0;
-      return lineBuf[linepos++];
-    }
-    else
-    { 
-      EOF_flag = TRUE;
-      return EOF;
-    }
-  }
-  else
-    return lineBuf[linepos++];
-}
-
-
-static void 
-ungetNextChar(void)
-{ 
-  if (!EOF_flag)
-  {
-    linepos--;
-  }
-}
-
-void
-catToken(int c,int tokenStringIndex)
-{
-  if(tokenStringIndex < MAXTOKENLEN - 1)
-  {
-    tokenString[++tokenStringIndex] = c;
-  }
-}
-
-/* lookup table of reserved words */
-static struct
-    { 
-      char* str;
-      int tok;
-    } reservedWords[MAXRESERVED]
-   = {{"if",keyword_if},{"else",keyword_else},{"null",keyword_null},
-      {"import",keyword_import},{"false",keyword_false},{"true",keyword_false},
-      {"break",keyword_break},{"return",keyword_return},{"goto",keyword_goto},
-      {"block",keyword_block},{"func",keyword_func},{"class",keyword_class}
-    };
-
-/* look for existing keyword*/
-/* linear search */
-/* TODO: use binary search */
-static int 
-reservedLookup(squ_string s,YYSTYPE* yylval)
-{ 
-  int i;
-  for (i = 0;i<MAXRESERVED;i++)
-    if (!strcmp(s,reservedWords[i].str))
-    {
-      is_ident = FALSE;
-      return reservedWords[i].tok;
-    }
-  is_ident = TRUE;
-
-  if(is_ident)
-  {
-    yylval -> nd = node_ident_new(s);
-  }
-
-  return identifier;
-}
-
-
-BOOL 
-isChar(int c)
-{
-    if((c >=35 &&c <= 126)||(c == ' ')||(c =='!')) 
-      return TRUE;
-    else
-      return FALSE;
-}
-
-static squ_int
-string_escape(char* s, size_t len)
-{
-  char* t = s;
-  char* tend = t + len;
-  char* p = s;
-
-  while (t < tend) {
-    switch (*t) {
-    case '\\':
-      t++;
-      if (t == tend) break;
-      switch (*t) {
-      case 'n':
-        *p++ = '\n'; break;
-      case 'r':
-        *p++ = '\r'; break;
-      case 't':
-        *p++ = '\t'; break;
-      case 'e':
-        *p++ = 033; break;
-      case '0':
-        *p++ = '\0'; break;
-      case 'x':
-        {
-          unsigned char c = 0;
-          char* xend = t+3;
-
-          t++;
-          while (t < tend && t < xend) {
-            switch (*t) {
-            case '0': case '1': case '2': case '3': case '4':
-            case '5': case '6': case '7': case '8': case '9':
-              c *= 16;
-              c += *t - '0';
-              break;
-            case 'a': case 'b': case 'c':
-            case 'd': case 'e': case 'f':
-              c *= 16;
-              c += *t - 'a' + 10;
-              break;
-            default:
-              xend = t;
-              break;
-            }
-            t++;
-          }
-          *p++ = (char)c;
-          t--;
-        }
-        break;
-      default:
-        *p++ = *t; break;
-      }
-      t++;
-      break;
-    default:
-      *p++ = *t++;
-      break;
-    }
-  }
-  return (squ_int)(p - s);
-}
-
-static squ_int
-lex_return(squ_int c,parser_state* p)
-{
-  p->lineno = p->tline;
-  p->tline = yylineno;
-  return c;
-}
-
-#define RETURN(c) return lex_return(c,p) 
-
-TokenType getToken(YYSTYPE* yylval,parser_state* p){
-  int result;
-  int c;
-  int tokenStringIndex = 0;
-  StateType state = BEGIN;
-  BOOL save;
-  int yyleng = 0;
-  while(state != FINISH)
-  {
-    c = getNextChar();
-    save = TRUE;
-    switch(state)
-    {
-      case BEGIN:
-        if(isdigit(c))
-        { 
-          state = INNUM;
-        }
-        else if(isalpha(c))
-        {
-          state = INID;
-        }
-        else if(c == ':')
-        {
-          state = INASSIGN;
-        }
-        else if((c == ' ') || (c == '\t'))
-        {
-           save = FALSE;
-        }
-        else if((c == '\n') || (c == '\r'))
-        {
-          yylineno++;
-          save = FALSE;
-        }
-        else if(c == '#')
-        { 
-          save = FALSE;
-          state = INCOMMENT;
-        }
-        else if((c == '\"') || (c == '\''))
-        {
-          state = INSTR;
-        }
-        else
-        {
-          state = FINISH;
-          switch(c)
-          {
-            case '==':
-              result = op_eq;
-            break;
-            case '!=':
-              result = op_neq;
-            break;
-            case '<':
-              result = op_lt;
-            break;
-            case '<=':
-              result = op_le;
-            break;
-            case '>':
-              result = op_gt;
-            break;
-            case '>=':
-              result = op_ge;
-            break;
-            case '+':
-              result = op_add;
-            break;
-            case '-':
-              result = op_sub;
-            break;
-            case '*':
-              result = op_mul;
-            break;
-            case '/':
-              result = op_div;
-            break;
-            case '%':
-              result = op_mod;
-            break;
-            case '&&':
-              result = op_and;
-            break;
-            case '||':
-              result = op_or;
-            break;
-            case '&':
-              result = op_amper;
-            break;
-            case '|':
-              result = op_bar;
-            break;
-            case '->':
-              result = op_next;
-            break;
-            case '(':
-              result = op_lp;
-            break;
-            case ')':
-              result = op_rp;
-            break;
-            case '{':
-              result = op_flp;
-            break;
-            case '}':
-              result = op_frp;
-            break;
-          }
-        }
-      break;
-      case INCOMMENT:
-        save = FALSE;
-        if(c == EOF)
-        { 
-          state = FINISH;
-          result = ENDFILE;
-        }
-        else if(c == '#') 
-        {
-          state = BEGIN;
-        }
-      break;
-      case INASSIGN:
-        state = FINISH;
-        if(c == '=')
-        {
-          result = op_assign;
-        }
-        else
-        {
-          ungetNextChar();
-          save = FALSE;
-          result = ERROR;
-        }
-      break;
-      case INNUM:
-        if(!isdigit(c))
-        {
-          ungetNextChar();
-          save = FALSE;
-          state = FINISH;
-          result = lit_number;
-          yylval -> nd = node_int_new(atoi(tokenString));
-        }
-      break;
-      case INID:
-        if(!isalpha(c))
-        {
-          ungetNextChar();
-          save = FALSE;
-          state = FINISH;
-          result = identifier;
-        }
-      break;
-      case INSTR:
-        if((c == '"') || (c == '\''))
-        {
-          state = FINISH;
-          save = FALSE;
-          squ_string s = strndup_(tokenString,yyleng + 1);
-          if(s[0] == '\'' || s[0] == '\"')
-          {
-            int i;
-            for(i = 0; i < yyleng + 1;i++)
-            {
-              s[i] = s[i + 1];
-            }
-          }
-          yylval -> nd = node_string_new(s);
-          result = lit_string;
-        }
-        else
-        {
-          catToken(c,tokenStringIndex);
-          yyleng++;
-        }
-      break;
-      case FINISH:
-      default:
-        printf("Lexical Error: State : %d\n",state);
-        state = FINISH;
-        result = ERROR;
-      break;
-    }
-    if((save) && (tokenStringIndex <= MAXTOKENLEN))
-      tokenString[tokenStringIndex++] = (char)c;
-    if(state == FINISH)
-    { 
-      tokenString[tokenStringIndex] = '\0';
-      if(result == identifier)
-        result = reservedLookup(tokenString,yylval);
-    }
-  }
-  RETURN(result);
-}
-
-
-static int
-yylex(YYSTYPE *yylval,parser_state* p)
-{
-  return getToken(yylval,p);
-}
 
 squ_value
 set_squ_ptr_value(void *p)
@@ -1495,7 +1425,8 @@ squ_cputs(squ_ctx* ctx, FILE* out, squ_array* args) {
     if (i != 0)
       fprintf(out, ", ");
     v = args->data[i];
-    if (v != NULL) {
+    if (v != NULL) 
+    {
       switch (v->t) {
       case SQU_VALUE_DOUBLE:
         fprintf(out, "%f", v->v.d);
@@ -1508,6 +1439,9 @@ squ_cputs(squ_ctx* ctx, FILE* out, squ_array* args) {
         break;
       case SQU_VALUE_BOOL:
         fprintf(out, v->v.b ? "true" : "false");
+        break;
+      case SQU_VALUE_INT:
+        fprintf(out,"%d",v->v.i);
         break;
       case SQU_VALUE_ERROR:
         fprintf(out, "%s", v->v.s);
@@ -1534,18 +1468,24 @@ squ_puts(squ_ctx* ctx, squ_array* args) {
   return squ_cputs(ctx, stdout, args);
 }
 
-int
-squ_run(parser_state* p)
+void squ_fun_def(parser_state* p,squ_string func_name, void* func_p)
 {
   int r;
   khiter_t k;
 
-  static squ_value vputs;
-  k = kh_put(value, p->ctx.env, "cat", &r);
-  vputs.t = SQU_VALUE_CFUNC;
-  vputs.v.p = squ_puts;
-  kh_value(p->ctx.env, k) = &vputs;
+  static squ_value v;
+  k = kh_put(value,p->ctx.env,func_name,&r);
+  v.t = SQU_VALUE_CFUNC;
+  v.v.p = func_p;
+  kh_value(p->ctx.env,k) = &v;
+}
 
+
+int
+squ_run(parser_state* p)
+{
+  squ_fun_def(p,"cat",squ_puts);
+  squ_fun_def(p,"print",squ_puts);
   node_expr_stmt(&p->ctx, (node*)p->lval);
   if (p->ctx.exc != NULL) 
   {
