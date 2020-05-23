@@ -85,14 +85,19 @@ typedef enum
 char tokenString[MAXTOKENLEN+1];
 
 #define BUFLEN 4096
-int lineno = 0;
+int lineno = 1;
+
+BOOL is_ident;
+BOOL is_fname;
+
+squ_string fname;
 
 static char lineBuf[BUFLEN]; /* holds the current line */
 static int linepos = 0; /* current position in LineBuf */
 static int bufsize = 0; /* current size of buffer string */
 static BOOL EOF_flag = FALSE; /* corrects ungetNextChar behavior on EOF */
 
-#define YYLEX_DECL() yylex(YYSTYPE *yylval)
+#define YYLEX_DECL() yylex(YYSTYPE *yylval,parser_state* p)
 
 static char*
 strdup_(const char *str)
@@ -128,15 +133,17 @@ strndup_(const char *str, size_t chars)
     return buffer;
 }
 
-char * copyString(char * s)
+squ_string copyString(char* s)
 { int n;
   char * t;
-  if (s==NULL) return NULL;
+  if(s == NULL) 
+    return NULL;
   n = strlen(s)+1;
   t = malloc(n);
-  if (t==NULL)
+  if (t == NULL)
     printf("Out of memory error at line %d\n",lineno);
-  else strcpy(t,s);
+  else 
+    strcpy(t,s);
   return t;
 }
 
@@ -190,6 +197,8 @@ char * copyString(char * s)
 
 #define TokenType YYTOKENTYPE
 
+static int yylineno = 1;
+
 /* Type of an expr */
 int expr_t;
 
@@ -226,11 +235,7 @@ List* vm_list;
 
 %union {
   node* nd;
-  squ_id id;
-  size_t int_val;
-  char* string_val;
-  double double_val;
-  char char_val;
+  squ_string id;
 }
 
 %type <nd> 
@@ -244,7 +249,6 @@ List* vm_list;
       block
       grade
       cond
-      var
       primary
       primary0
 
@@ -255,6 +259,7 @@ List* vm_list;
       opt_block 
       f_args 
       map 
+      var
       map_args 
       bparam
 
@@ -270,11 +275,12 @@ List* vm_list;
       lit_string
 
 %pure-parser
-%parse-param {parser_state *p}
+%parse-param {parser_state* p}
+%lex-param {p}
 
 %{
 
-static int yylex(YYSTYPE *lval);
+static int yylex(YYSTYPE* yylval,parser_state* p);
 static void yyerror(parser_state* p, const char* s);
 static int yywarp(void);
 static void yywarnning(parser_state* p,const char* s);
@@ -415,7 +421,7 @@ stmt            : var op_assign expr
 
 var             : identifier
                     {
-                        //$$ = node_ident_new((squ_id)copyString(tokenString));
+                        $$ = node_ident_new($1);
                     }
                 ;
 
@@ -637,7 +643,7 @@ primary0        : lit_number
                 | lit_string
                 | identifier
                   {
-                    node_ident_new($1);
+                    $$ = node_ident_new($1);
                   }
                 | op_lp expr op_rp
                     {
@@ -706,6 +712,7 @@ primary         : primary0
                     }
                 | identifier op_lp opt_args op_rp opt_block
                     {
+                      $1 = "cat";
                       $$ = node_call_new(NULL, node_ident_new($1), $3, $5);
                     }
                 | keyword_func identifier op_lp opt_args op_rp opt_block
@@ -875,10 +882,6 @@ catToken(int c,int tokenStringIndex)
   {
     tokenString[++tokenStringIndex] = c;
   }
-  else
-  {
-    
-  }
 }
 
 /* lookup table of reserved words */
@@ -897,14 +900,22 @@ static struct
 /* linear search */
 /* TODO: use binary search */
 static int 
-reservedLookup(squ_string s)
+reservedLookup(squ_string s,YYSTYPE* yylval)
 { 
   int i;
   for (i = 0;i<MAXRESERVED;i++)
     if (!strcmp(s,reservedWords[i].str))
     {
+      is_ident = FALSE;
       return reservedWords[i].tok;
     }
+  is_ident = TRUE;
+
+  if(is_ident)
+  {
+    yylval -> nd = node_ident_new(s);
+  }
+
   return identifier;
 }
 
@@ -982,8 +993,17 @@ string_escape(char* s, size_t len)
   return (squ_int)(p - s);
 }
 
+static squ_int
+lex_return(squ_int c,parser_state* p)
+{
+  p->lineno = p->tline;
+  p->tline = yylineno;
+  return c;
+}
 
-TokenType getToken(YYSTYPE* yylval){
+#define RETURN(c) return lex_return(c,p) 
+
+TokenType getToken(YYSTYPE* yylval,parser_state* p){
   int result;
   int c;
   int tokenStringIndex = 0;
@@ -1001,7 +1021,7 @@ TokenType getToken(YYSTYPE* yylval){
         { 
           state = INNUM;
         }
-        else if(isalpha(c) || c == '_')
+        else if(isalpha(c))
         {
           state = INID;
         }
@@ -1015,6 +1035,7 @@ TokenType getToken(YYSTYPE* yylval){
         }
         else if((c == '\n') || (c == '\r'))
         {
+          yylineno++;
           save = FALSE;
         }
         else if(c == '#')
@@ -1174,17 +1195,17 @@ TokenType getToken(YYSTYPE* yylval){
     { 
       tokenString[tokenStringIndex] = '\0';
       if(result == identifier)
-        result = reservedLookup(tokenString);
+        result = reservedLookup(tokenString,yylval);
     }
   }
-  return result;
+  RETURN(result);
 }
 
 
 static int
-yylex(YYSTYPE *yylval)
+yylex(YYSTYPE *yylval,parser_state* p)
 {
-  return getToken(yylval);
+  return getToken(yylval,p);
 }
 
 squ_value
@@ -1415,13 +1436,15 @@ node_expr(squ_ctx* ctx, node* np)
     break;
   case NODE_CALL:
     {
-      
       node_call* ncall = np->value.v.p;
-      if (ncall->ident != NULL) {
-        khint_t k = kh_get(value, ctx->env, (char*) ncall->ident->value.v.id);
-        if (k != kh_end(ctx->env)) {
+      if (ncall->ident != NULL) 
+      {
+        khint_t k = kh_get(value, ctx->env, ncall->ident->value.v.id);
+        if (k != kh_end(ctx->env)) 
+        {
           squ_value* v = kh_value(ctx->env, k);
-          if (v->t == SQU_VALUE_CFUNC) {
+          if (v->t == SQU_VALUE_CFUNC) 
+          {
             node_array* arr0 = ncall->args->value.v.p;
             squ_array* arr1 = squ_array_new();
             int i;
@@ -1429,12 +1452,13 @@ node_expr(squ_ctx* ctx, node* np)
               squ_array_add(arr1, node_expr(ctx, arr0->data[i]));
             ((squ_cfunc) v->v.p)(ctx, arr1);
           }
-        } 
+        }
         else 
         {
           squ_raise(ctx, "function not found!");
         }
-      } else {
+      } 
+      else {
         node_block* nblk = ncall->blk->value.v.p;
         node_expr_stmt(ctx, nblk->stmt_seq);
         if (ctx->exc != NULL) {
@@ -1477,7 +1501,7 @@ squ_cputs(squ_ctx* ctx, FILE* out, squ_array* args) {
         fprintf(out, "%f", v->v.d);
         break;
       case SQU_VALUE_STRING:
-        fprintf(out, "'%s'", v->v.s);
+        fprintf(out, "%s", v->v.s);
         break;
       case SQU_VALUE_NULL:
         fprintf(out, "null");
@@ -1493,7 +1517,6 @@ squ_cputs(squ_ctx* ctx, FILE* out, squ_array* args) {
         break;
       default:
         fprintf(out, "<%p>\n", v->v.p);
-        fprintf(out, "%s", v->v.s);
         break;
       }
     } 
@@ -1518,7 +1541,7 @@ squ_run(parser_state* p)
   khiter_t k;
 
   static squ_value vputs;
-  k = kh_put(value, p->ctx.env, "puts", &r);
+  k = kh_put(value, p->ctx.env, "cat", &r);
   vputs.t = SQU_VALUE_CFUNC;
   vputs.v.p = squ_puts;
   kh_value(p->ctx.env, k) = &vputs;

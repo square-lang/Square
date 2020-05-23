@@ -98,7 +98,7 @@ extern node* node_if_new(node*, node*, node*);
 extern node* node_return_new(node*);
 extern node* node_import_new(squ_id);
 extern node* node_break_new();
-extern node* node_ident_new(squ_id);
+extern node* node_ident_new(squ_string);
 extern squ_id node_ident_of(squ_string);
 extern node* node_null();
 extern node* node_true();

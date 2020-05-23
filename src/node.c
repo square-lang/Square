@@ -47,7 +47,7 @@ node_value_new(node* v)
 squ_array*
 squ_array_new() {
   /* TODO: error check */
-  squ_array* arr = malloc(sizeof(squ_array));
+  squ_array* arr = (squ_array*)malloc(sizeof(squ_array*));
   arr->len = 0;
   arr->max = 0;
   arr->data = NULL;
@@ -261,12 +261,12 @@ node_string_len_new(squ_string s, size_t l)
 }
 
 node*
-node_ident_new(squ_id id)
+node_ident_new(squ_string id)
 {
   node* np = malloc(sizeof(node));
 
   np->type = NODE_IDENT;
-  np->value.t = SQU_VALUE_FIXNUM;
+  np->value.t = SQU_VALUE_IDENT;
   np->value.v.id = id;
   return np;
 }

@@ -97,18 +97,14 @@ extern int yydebug;
 typedef union YYSTYPE
 {
 /* Line 2058 of yacc.c  */
-#line 227 "parse.y"
+#line 236 "parse.y"
 
   node* nd;
-  squ_id id;
-  size_t int_val;
-  char* string_val;
-  double double_val;
-  char char_val;
+  squ_string id;
 
 
 /* Line 2058 of yacc.c  */
-#line 112 "parse.tab.h"
+#line 108 "parse.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
@@ -124,7 +120,7 @@ int yyparse ();
 #endif
 #else /* ! YYPARSE_PARAM */
 #if defined __STDC__ || defined __cplusplus
-int yyparse (parser_state *p);
+int yyparse (parser_state* p);
 #else
 int yyparse ();
 #endif

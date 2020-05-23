@@ -12,7 +12,7 @@ typedef enum{
   SQU_VALUE_PTR,           /* point */
   SQU_VALUE_STRING,        /* string */
   SQU_VALUE_DOUBLE,        /* double */
-  SQU_VALUE_FIXNUM,        /* fix number */        
+  SQU_VALUE_IDENT,        /* identifier */        
   SQU_VALUE_NULL,          /* null */
   SQU_VALUE_CFUNC,         /* funtion */
   SQU_VALUE_USER,          /* user data */
@@ -20,7 +20,7 @@ typedef enum{
 } squ_value_type;
 
 /* define data type in square */
-typedef intptr_t squ_id;   /* identifier */
+typedef char* squ_id;   /* identifier */
 typedef int squ_bool;      /* bool */
 typedef int squ_int;       /* int */
 typedef double squ_double; /* double */

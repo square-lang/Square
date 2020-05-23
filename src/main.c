@@ -5,26 +5,6 @@
 FILE *yyin, *yyout;
 
 static void
-fprint_str(squ_string str, FILE *f)
-{
-  fprintf(f, "%s",str);
-}
-
-static void
-print_str(squ_string name)
-{
-  fprint_str(name, stdout);
-  fputs("\n", stdout);
-}
-
-static void
-print_id(const char* pre, squ_string name)
-{
-  fputs(pre, stdout);
-  print_str(name);
-}
-
-static void
 dump_node(node* np, int indent) {
   int i;
   for (i = 0; i < indent; i++)
@@ -99,7 +79,10 @@ dump_node(node* np, int indent) {
       printf("VALUE(STRING): %s\n", np->value.v.s);
       break;
     case SQU_VALUE_BOOL:
-      printf("VALUE(BOOL): %s\n", np->value.v.i ? "true" : "false");
+      printf("VALUE(BOOL): %s\n", np->value.v.b ? "true" : "false");
+      break;
+    case SQU_VALUE_INT:
+      printf("VALUE(INT): %d\n",np->value.v.i);
       break;
     case SQU_VALUE_NULL:
       printf("VALUE(NULL): null\n");
@@ -268,7 +251,8 @@ main(int argc, const char** argv)
   if (argc == 1) {              /* no args */
     n = squ_parse_input(&state, stdin, "stdin");
   }
-  else {
+  else 
+  {
     for (i=1; i<argc; i++) {
       n += squ_parse_file(&state, argv[i]);
     }
