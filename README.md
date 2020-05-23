@@ -10,12 +10,16 @@ Square is a powerful programming language.
 $ cd src
 $ ./a.exe ../examples/helloworld.squ
 ```
-#### Note: Square doesn't work yet. But you can check its syntax!
+## Note: Square is under developing, some files maybe can not run yet.But you can check its syntax!
 ## Examples
 A program to print "Hello World" on the screen.
 ```
 # Print the "Hello World" on the screen! #
 cat("Hello World!")
+```
+Result:
+```
+Hello World!
 ```
 ## Contribution
 Welcome to pull a request!

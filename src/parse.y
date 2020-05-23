@@ -460,6 +460,9 @@ TokenType getToken(YYSTYPE* yylval,parser_state* p){
             case '}':
               result = op_frp;
             break;
+            case ',':
+              result = op_comma;
+            break;
           }
         }
       break;
@@ -653,6 +656,7 @@ static void yywarnning(parser_state* p,const char* s);
         op_rp
         op_flp
         op_frp
+        op_comma
 
 %token
         ERROR
@@ -959,7 +963,7 @@ args            : expr
                       $$ = node_array_new();
                       node_array_add($$, $1);
                     }
-                | args ',' expr
+                | args op_comma expr
                     {
                       $$ = $1;
                       node_array_add($1, $3);
@@ -1074,7 +1078,7 @@ map_args        : map
                       $$ = node_map_new();
                       node_array_add($$, $1);
                     }
-                | map_args ',' map
+                | map_args op_comma map
                     {
                       $$ = $1;
                       node_array_add($$, $3);
@@ -1116,7 +1120,7 @@ f_args          : identifier
                       $$ = node_array_new();
                       node_array_add($$, node_ident_new($1));
                     }
-                | f_args ',' identifier
+                | f_args op_comma identifier
                     {
                       $$ = $1;
                       node_array_add($$, node_ident_new($3));
@@ -1451,6 +1455,7 @@ squ_cputs(squ_ctx* ctx, FILE* out, squ_array* args) {
         break;
       default:
         fprintf(out, "<%p>\n", v->v.p);
+        fprintf(out, "%s\n", v->v.s);
         break;
       }
     } 
@@ -1468,7 +1473,7 @@ squ_puts(squ_ctx* ctx, squ_array* args) {
   return squ_cputs(ctx, stdout, args);
 }
 
-void squ_fun_def(parser_state* p,squ_string func_name, void* func_p)
+void squ_func_def(parser_state* p,squ_string func_name, void* func_p)
 {
   int r;
   khiter_t k;
@@ -1484,16 +1489,11 @@ void squ_fun_def(parser_state* p,squ_string func_name, void* func_p)
 int
 squ_run(parser_state* p)
 {
-  squ_fun_def(p,"cat",squ_puts);
-  squ_fun_def(p,"print",squ_puts);
+  squ_func_def(p,"cat",squ_puts);
+  squ_func_def(p,"print",squ_puts);
+  squ_func_def(p,"exit",squ_exit);
+  squ_func_def(p,"input",squ_input);
   node_expr_stmt(&p->ctx, (node*)p->lval);
-  if (p->ctx.exc != NULL) 
-  {
-    squ_array* arr = squ_array_new();
-    squ_array_add(arr, p->ctx.exc->arg);
-    squ_cputs(&p->ctx, stderr, arr);
-    p->ctx.exc = NULL;
-  }
   return 0;
 }
 

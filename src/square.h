@@ -69,6 +69,11 @@ typedef struct parser_state {
 
 typedef squ_value* (*squ_cfunc)(squ_ctx*, squ_array*);
 
+/* Build-in function in Square */
+squ_value* squ_puts(squ_ctx*, squ_array*);
+squ_value* squ_input(squ_ctx*, squ_array*);
+squ_value* squ_exit(squ_ctx*, squ_int);
+
 int squ_parse_init(parser_state*);
 void squ_parse_free(parser_state*);
 int squ_parse_file(parser_state*, const char*);
