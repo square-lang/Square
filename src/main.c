@@ -48,6 +48,11 @@ dump_node(node* np, int indent) {
     puts(((node_op*) np->value.v.p)->op);
     dump_node(((node_op*) np->value.v.p)->rhs, indent+1);
     break;
+  case NODE_LET:
+    printf("LET:\n");
+    dump_node(((node_let*) np->value.v.p)->lhs, indent+1);
+    dump_node(((node_let*) np->value.v.p)->rhs, indent+1);
+    break;
   case NODE_BLOCK:
     printf("BLOCK:\n");
     dump_node(((node_block*) np->value.v.p)->args, indent+1);

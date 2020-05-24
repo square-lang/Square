@@ -1,1 +1,2 @@
-input("input:")
+# open a file #
+open("../examples/helloworld.squ")

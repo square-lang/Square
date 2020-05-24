@@ -46,6 +46,7 @@
 #include <ctype.h>
 #include <malloc.h>
 #include <assert.h>
+#include <fcntl.h>
 
 extern FILE *yyin, *yyout;
 extern int yyparse(parser_state*);
@@ -1266,8 +1267,10 @@ node_expr(squ_ctx* ctx, node* np)
         return NULL;
       if (*nop->op == '+' && *(nop->op+1) == '\0') {
         squ_value* rhs = node_expr(ctx, nop->rhs);
-        if (ctx->exc != NULL) return NULL;
-        if (lhs->t == SQU_VALUE_STRING && rhs->t == SQU_VALUE_STRING) {
+        if (ctx->exc != NULL) 
+          return NULL;
+        if (lhs->t == SQU_VALUE_STRING && rhs->t == SQU_VALUE_STRING)
+        {
           squ_value* new = malloc(sizeof(squ_value));
           char *p = malloc(strlen(lhs->v.s) + strlen(rhs->v.s) + 1);
           strcpy(p, lhs->v.s);
@@ -1275,14 +1278,17 @@ node_expr(squ_ctx* ctx, node* np)
           new->t = SQU_VALUE_STRING;
           new->v.s = p;
           return new;
-        } else if (lhs->t == SQU_VALUE_DOUBLE && rhs->t == SQU_VALUE_DOUBLE) {
+        } 
+        else if (lhs->t == SQU_VALUE_DOUBLE && rhs->t == SQU_VALUE_DOUBLE) 
+        {
           squ_value* new = malloc(sizeof(squ_value));
           new->t = SQU_VALUE_DOUBLE;
           new->v.d = lhs->v.d + rhs->v.d;
           return new;
         }
       }
-      if (*nop->op == '-' && *(nop->op+1) == '\0') {
+      if (*nop->op == '-' && *(nop->op+1) == '\0')
+      {
         squ_value* rhs = node_expr(ctx, nop->rhs);
         if (ctx->exc != NULL) 
           return NULL;
@@ -1493,6 +1499,8 @@ squ_run(parser_state* p)
   squ_func_def(p,"print",squ_puts);
   squ_func_def(p,"exit",squ_exit);
   squ_func_def(p,"input",squ_input);
+  squ_func_def(p,"open",squ_open);
+  //squ_func_def(p,"write",squ_write);
   node_expr_stmt(&p->ctx, (node*)p->lval);
   return 0;
 }
