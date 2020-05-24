@@ -1362,7 +1362,8 @@ node_expr(squ_ctx* ctx, node* np)
       }
       if (*nop->op == '!' && (*(nop->op+1)) == '=') {
         squ_value* rhs = node_expr(ctx, nop->rhs);
-        if (ctx->exc != NULL) return NULL;
+        if (ctx->exc != NULL) 
+          return NULL;
         if (lhs->t == SQU_VALUE_DOUBLE && rhs->t == SQU_VALUE_DOUBLE) {
           squ_value* new = malloc(sizeof(squ_value));
           new->t = SQU_VALUE_BOOL;
@@ -1372,6 +1373,19 @@ node_expr(squ_ctx* ctx, node* np)
       }
       
       squ_raise(ctx, "invalid operator");
+    }
+    break;
+  case NODE_LET:
+    {
+      node_let* nlet = (node_let*)np;
+      if (ctx->exc != NULL) 
+        return NULL;
+      squ_value* v = node_expr(ctx,nlet->rhs);
+      if(v == NULL)
+      {
+        squ_raise(ctx,"Fail to assign");
+      }
+      squ_var_def(ctx,nlet->rhs,v);
     }
     break;
   case NODE_CALL:
@@ -1479,7 +1493,21 @@ squ_puts(squ_ctx* ctx, squ_array* args) {
   return squ_cputs(ctx, stdout, args);
 }
 
-void squ_func_def(parser_state* p,squ_string func_name, void* func_p)
+void 
+squ_var_def(squ_ctx* ctx,node* var, void* var_p)
+{
+  int r;
+  khiter_t k;
+
+  static squ_value v;
+  k = kh_put(value,ctx->env,var->value.v.id,&r);
+  v.t = SQU_VALUE_IDENT;
+  v.v.p = var_p;
+  kh_value(ctx->env,k) = &v;
+}
+
+void 
+squ_func_def(parser_state* p,squ_string func_name, void* func_p)
 {
   int r;
   khiter_t k;
