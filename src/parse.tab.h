@@ -79,17 +79,16 @@ extern int yydebug;
      op_rp = 288,
      op_flp = 289,
      op_frp = 290,
-     op_comma = 291,
-     ERROR = 292,
-     ENDFILE = 293,
-     lit_number = 294,
-     lit_string = 295,
-     lit_true = 296,
-     lit_false = 297,
-     lit_null = 298,
-     identifier = 299,
-     op_LOWEST = 300,
-     op_HIGHEST = 301
+     ERROR = 291,
+     ENDFILE = 292,
+     lit_number = 293,
+     lit_string = 294,
+     lit_true = 295,
+     lit_false = 296,
+     lit_null = 297,
+     identifier = 298,
+     op_LOWEST = 299,
+     op_HIGHEST = 300
    };
 #endif
 
@@ -98,14 +97,14 @@ extern int yydebug;
 typedef union YYSTYPE
 {
 /* Line 2058 of yacc.c  */
-#line 570 "parse.y"
+#line 566 "parse.y"
 
   node* nd;
   squ_string id;
 
 
 /* Line 2058 of yacc.c  */
-#line 109 "parse.tab.h"
+#line 108 "parse.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

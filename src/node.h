@@ -105,7 +105,4 @@ extern node* node_true();
 extern node* node_false();
 extern void node_free(node*);
 
-void squ_var_def(squ_ctx* ctx,node* var, void* var_p);
-
 #endif /* _NODE_H_ */
-

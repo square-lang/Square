@@ -1,2 +1,2 @@
 # open a file #
-a := open("../examples/helloworld.squ")
+open("../examples/helloworld.squ")

@@ -76,7 +76,6 @@ squ_open(squ_ctx* ctx, squ_array* args)
       fp = fopen(path,"r");
       if(fp == NULL)
       {
-        puts("Can not open the file!");
         return -1;
       }
     }
@@ -99,7 +98,6 @@ squ_open(squ_ctx* ctx, squ_array* args)
       fp = fopen(path,mode);
       if(fp == NULL)
       {
-        puts("Can not open the file!");
         return -1;
       }
     }
