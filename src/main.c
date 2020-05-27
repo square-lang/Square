@@ -53,6 +53,11 @@ dump_node(node* np, int indent) {
     dump_node(((node_block*) np->value.v.p)->args, indent+1);
     dump_node(((node_block*) np->value.v.p)->stmt_seq, indent+1);
     break;
+  case NODE_LET:
+    printf("LET:\n");
+    dump_node(((node_let*) np->value.v.p)->lhs,indent+1);
+    dump_node(((node_let*) np->value.v.p)->rhs,indent+1);
+    break;
   case NODE_CALL:
     printf("CALL:\n");
     dump_node(((node_call*) np->value.v.p)->cond, indent+2);
@@ -189,6 +194,11 @@ node_free(node* np) {
     node_free(((node_op*) np->value.v.p)->lhs);
     node_free(((node_op*) np->value.v.p)->rhs);
     free(np);
+    break;
+  case NODE_LET:
+    node_free(((node_let*) np->value.v.p)->lhs);
+    node_free(((node_let*) np->value.v.p)->rhs);
+    node_free(np);
     break;
   case NODE_BLOCK:
     node_free(((node_block*) np->value.v.p)->args);

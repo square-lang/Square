@@ -14,12 +14,15 @@ $ ./a.exe ../examples/helloworld.squ
 ## Examples
 A program to print "Hello World" on the screen.
 ```
-# Print the "Hello World" on the screen! #
+#  Print "Hello World" on the screen #
 cat("Hello World!")
+# You can also use "print" #
+print("Hi")
 ```
 Result:
 ```
 Hello World!
+Hi
 ```
 ## Contribution
 Welcome to pull a request!
