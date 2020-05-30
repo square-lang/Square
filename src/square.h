@@ -4,6 +4,20 @@
 #include <stdint.h>
 #include "khash.h"
 
+#ifndef TRUE
+# define TRUE 1
+#else
+# error TRUE must be 1
+#endif
+#ifndef FALSE
+# define FALSE 0
+#else
+# error FALSE must be 0
+#endif
+#ifndef BOOL
+# define BOOL int
+#endif
+
 typedef enum{
   SQU_VALUE_BOOL,          /* bool */
   SQU_VALUE_INT,           /* int */
@@ -77,7 +91,8 @@ int squ_parse_string(parser_state*, const char*);
 int squ_run(parser_state*);
 void squ_raise(squ_ctx*, const char*);
 
-/* library & build-in function in Square*/
-squ_value* squ_request(squ_ctx* ctx, squ_array* args);
+squ_value* squ_var_get(squ_ctx* ctx, squ_string name);
+void squ_var_def(squ_ctx* ctx,squ_string var_name,squ_value* v);
+squ_value* squ_var_get(squ_ctx* ctx, squ_string name);
 
 #endif
