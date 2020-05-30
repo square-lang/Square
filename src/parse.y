@@ -40,7 +40,6 @@
 
 #include "square.h"
 #include "node.h"
-#include "../squ_vm/opcode.h"
 
 #include <string.h>
 #include <ctype.h>
@@ -759,10 +758,6 @@ var             : identifier
 expr            : expr op_add expr
                     {
                       $$ = node_op_new("+", $1, $3);
-                      switch($$ -> type)
-                      {
-
-                      }
                     }
                 | expr op_sub expr
                     {
@@ -1047,7 +1042,7 @@ primary         : primary0
                     }
                 | keyword_func identifier op_lp opt_args op_rp opt_block
                     {
-
+                      $$ = node_call_new(NULL,node_ident_new($2), $4, $6);
                     }
                 | primary '.' identifier op_lp opt_args op_rp opt_block
                     {
@@ -1223,6 +1218,32 @@ node_expr_stmt(squ_ctx* ctx, node* np)
     v = node_expr(ctx, arr->data[i]);
   }
   return v;
+}
+
+void 
+squ_fun_def(parser_state* p,squ_string func_name, void* func_p)
+{
+  int r;
+  khiter_t k;
+
+  static squ_value v;
+  k = kh_put(value,p->ctx.env,func_name,&r);
+  v.t = SQU_VALUE_CFUNC;
+  v.v.p = func_p;
+  kh_value(p->ctx.env,k) = &v;
+}
+
+void
+squ_var_def(squ_ctx* ctx,squ_string var_name,squ_value* v)
+{
+  int ret;
+  khiter_t k;
+  k = kh_put(value,ctx->env,var_name,&ret);
+  if(ret <= 0)
+  {
+    return;
+  }
+  kh_value(ctx->env,k) = v;
 }
 
 squ_value*
@@ -1486,7 +1507,8 @@ node_expr(squ_ctx* ctx, node* np)
           squ_raise(ctx, "function not found!");
         }
       } 
-      else {
+      if(ncall->blk != NULL)
+      {
         node_block* nblk = ncall->blk->value.v.p;
         node_expr_stmt(ctx, nblk->stmt_seq);
         if (ctx->exc != NULL) {
@@ -1506,7 +1528,24 @@ node_expr(squ_ctx* ctx, node* np)
       return NULL;
     }
     break;
+  case NODE_LET:
+    {
+      node_let* nlet = np->value.v.p;
+      squ_value* v_r;  /* right */
+      squ_value* v_l;  /* left */
+      khiter_t k;
+      v_r = node_expr(ctx, nlet->rhs);
+      v_l = node_expr(ctx, nlet->lhs);
+      if(v_l != NULL)
+      {
+        squ_var_def(ctx,v_l->v.id,v_r);
+      }
+    }
+    break;
   case NODE_VALUE:
+    return &np->value;
+    break;
+  case NODE_IDENT:
     return &np->value;
     break;
   default:
@@ -1516,48 +1555,75 @@ node_expr(squ_ctx* ctx, node* np)
 }
 
 squ_value*
-squ_cputs(squ_ctx* ctx, FILE* out, squ_array* args) {
+squ_cputs(squ_ctx* ctx, FILE* out, squ_array* args)
+{
+  
   int i;
-  for (i = 0; i < args->len; i++) {
+  for (i = 0; i < args->len; i++) 
+  {
     squ_value* v;
     if (i != 0)
       fprintf(out, ", ");
     v = args->data[i];
     if (v != NULL) 
     {
-      switch (v->t) {
+      switch (v->t) 
+      {
       case SQU_VALUE_DOUBLE:
-        fprintf(out, "%f", v->v.d);
+        fprintf(out, "%f\n", v->v.d);
         break;
       case SQU_VALUE_STRING:
-        fprintf(out, "%s", v->v.s);
+        fprintf(out, "%s\n", v->v.s);
         break;
+      case SQU_VALUE_IDENT:
+        {
+          khint_t k = kh_get(value, ctx->env, v->v.id);
+          squ_value* v1 = kh_value(ctx->env, k);
+          switch(v1->t)
+          {
+            case SQU_VALUE_INT:
+              fprintf(out,"%d\n",v1->v.i);
+              break;
+            case SQU_VALUE_DOUBLE:
+              fprintf(out,"%f\n",v1->v.d);
+              break;
+            case SQU_VALUE_NULL:
+              fprintf(out,"null\n");
+              break;
+            case SQU_VALUE_STRING:
+              fprintf(out,"%s\n",v1->v.s);
+              break;
+            case SQU_VALUE_BOOL:
+              fprintf(out, v1->v.b ? "true\n" : "false\n");
+              break;
+          }
+          break;
+        }
       case SQU_VALUE_NULL:
-        fprintf(out, "null");
+        fprintf(out, "null\n");
         break;
       case SQU_VALUE_BOOL:
-        fprintf(out, v->v.b ? "true" : "false");
+        fprintf(out, v->v.b ? "true\n" : "false\n");
         break;
       case SQU_VALUE_INT:
-        fprintf(out,"%d",v->v.i);
+        fprintf(out,"%d\n",v->v.i);
         break;
       case SQU_VALUE_ERROR:
-        fprintf(out, "%s", v->v.s);
+        fprintf(out, "%s\n", v->v.s);
         break;
       case SQU_VALUE_CFUNC:
-        fprintf(out,"<%p>",v->v.p);
+        fprintf(out,"<%p>\n",v->v.p);
         break;
       default:
         fprintf(out, "<%p>\n", v->v.p);
         break;
       }
-    } 
-    else 
+    }
+    else
     {
-      fprintf(out, "null");
+      fprintf(out,"null");
     }
   }
-  fprintf(out, "\n");
   return NULL;
 }
 
@@ -1565,19 +1631,6 @@ squ_value*
 squ_puts(squ_ctx* ctx, squ_array* args) {
   return squ_cputs(ctx, stdout, args);
 }
-
-void squ_fun_def(parser_state* p,squ_string func_name, void* func_p)
-{
-  int r;
-  khiter_t k;
-
-  static squ_value v;
-  k = kh_put(value,p->ctx.env,func_name,&r);
-  v.t = SQU_VALUE_CFUNC;
-  v.v.p = func_p;
-  kh_value(p->ctx.env,k) = &v;
-}
-
 
 int
 squ_run(parser_state* p)
@@ -1589,7 +1642,6 @@ squ_run(parser_state* p)
   {
     squ_array* arr = squ_array_new();
     squ_array_add(arr, p->ctx.exc->arg);
-    squ_cputs(&p->ctx, stderr, arr);
     p->ctx.exc = NULL;
   }
   return 0;

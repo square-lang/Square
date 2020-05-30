@@ -2,5 +2,7 @@
 func hello()
 {
     # Print the "This is a function" on the screen #
-    cat("This is a function!") 
+    cat("This is a function!")
 }
+# Call the function #
+hello()

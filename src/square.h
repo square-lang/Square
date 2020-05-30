@@ -77,4 +77,7 @@ int squ_parse_string(parser_state*, const char*);
 int squ_run(parser_state*);
 void squ_raise(squ_ctx*, const char*);
 
+/* library & build-in function in Square*/
+squ_value* squ_request(squ_ctx* ctx, squ_array* args);
+
 #endif
