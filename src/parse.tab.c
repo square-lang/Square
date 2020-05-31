@@ -1012,7 +1012,7 @@ static const yytype_uint16 yyrline[] =
      919,   923,   927,   931,   935,   939,   943,   947,   951,   957,
      961,   965,   969,   975,   976,   980,   984,   988,   992,   996,
     1002,  1006,  1012,  1017,  1025,  1028,  1034,  1038,  1044,  1048,
-    1054,  1059,  1066,  1069,  1070,  1071,  1074,  1075,  1076,  1077
+    1054,  1059,  1066,  1069,  1070,  1074,  1077,  1078,  1079,  1080
 };
 #endif
 
@@ -2916,13 +2916,15 @@ yyreduce:
 
   case 104:
 /* Line 1792 of yacc.c  */
-#line 1070 "parse.y"
-    {yyerrok;}
+#line 1071 "parse.y"
+    {
+                    yyerrok;
+                  }
     break;
 
 
 /* Line 1792 of yacc.c  */
-#line 2926 "parse.tab.c"
+#line 2928 "parse.tab.c"
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -3154,4 +3156,4 @@ yyreturn:
 
 
 /* Line 2055 of yacc.c  */
-#line 1079 "parse.y"
+#line 1082 "parse.y"

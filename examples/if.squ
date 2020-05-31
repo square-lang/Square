@@ -1,9 +1,9 @@
-# Note: if stmt can not work now  #
-if(a == 0)
+a := 11
+if(a % 2 == 0)
 {
-    cat("a is eq 0")
+    print("This is a even number")
 }
 else
 {
-    cat("a is neq 0")
+    print("This is a odd number")
 }

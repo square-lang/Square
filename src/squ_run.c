@@ -2,75 +2,7 @@
 #include "square.h"
 
 #include <assert.h>
-
-squ_value
-set_squ_ptr_value(void *p)
-{
-  squ_value v;
-
-  v.t = SQU_VALUE_PTR;
-  v.v.p = p;
-  return v;
-}
-
-squ_value
-set_squ_bool_value(int b)
-{
-  squ_value v;
-
-  v.t = SQU_VALUE_BOOL;
-  v.v.b = b ? TRUE : FALSE;
-  return v;
-}
-
-squ_value
-set_squ_int_value(squ_int i)
-{
-  squ_value v;
-
-  v.t = SQU_VALUE_INT;
-  v.v.i = i;
-  return v;
-}
-
-squ_value
-set_squ_double_value(squ_double d)
-{
-  squ_value v;
-
-  v.t = SQU_VALUE_DOUBLE;
-  v.v.d = d;
-  return v;
-}
-
-void*
-get_squ_value_ptr(squ_value v)
-{
-  assert(v.t == SQU_VALUE_PTR);
-  return v.v.p;
-}
-
-squ_bool
-get_squ_value_bool(squ_value v)
-{
-  assert(v.t == SQU_VALUE_BOOL);
-  return v.v.i ? TRUE : FALSE;
-}
-
-long
-get_squ_value_int(squ_value v)
-{
-  assert(v.t == SQU_VALUE_INT);
-  return v.v.i;
-}
-
-double
-get_squ_value_double(squ_value v)
-{
-  assert(v.t == SQU_VALUE_DOUBLE);
-  return v.v.d;
-}
-
+#include <stdio.h>
 
 squ_value* node_expr(squ_ctx*, node*);
 
@@ -124,6 +56,13 @@ squ_var_get(squ_ctx* ctx, squ_string name)
   return v;
 }
 
+void
+squ_var_reset(squ_ctx* ctx, squ_string name, squ_value* v)
+{
+  khint_t k = kh_get(value, ctx->env, name);
+  kh_value(ctx->env,k) = v;
+}
+
 squ_value*
 node_expr(squ_ctx* ctx, node* np)
 {
@@ -141,19 +80,17 @@ node_expr(squ_ctx* ctx, node* np)
     {
       node_if* nif = np->value.v.p;
       squ_value* v = node_expr(ctx, nif->cond);
-      if (ctx->exc != NULL) 
+      if (ctx->exc != NULL)
       {
         return NULL;
       }
-      if (v->t == SQU_VALUE_NULL || v->v.p == NULL ||
-          (v->t == SQU_VALUE_STRING && *v->v.s == 0)) 
-          {
-            if (nif->opt_else != NULL)
-            node_expr_stmt(ctx, nif->opt_else);
-          }
-      else 
+      if (v->t == SQU_VALUE_BOOL && v->v.b) 
       {
         node_expr_stmt(ctx, nif->stmt_seq);
+      }
+      else if (nif->opt_else != NULL)
+      {
+        node_expr_stmt(ctx, nif->opt_else);
       }
     }
     break;
@@ -166,7 +103,8 @@ node_expr(squ_ctx* ctx, node* np)
       if (*nop->op == '+' && *(nop->op+1) == '\0') 
       {
         squ_value* rhs = node_expr(ctx, nop->rhs);
-        if (ctx->exc != NULL) return NULL;
+        if (ctx->exc != NULL) 
+          return NULL;
         if (lhs->t == SQU_VALUE_STRING && rhs->t == SQU_VALUE_STRING) 
         {
           squ_value* new = malloc(sizeof(squ_value));
@@ -191,52 +129,130 @@ node_expr(squ_ctx* ctx, node* np)
           new->v.i = lhs->v.i + rhs->v.i;
           return new;
         }
+        else if(lhs->t == SQU_VALUE_IDENT)
+        {
+          switch (rhs->t)
+          {
+          case SQU_VALUE_INT:
+            {
+              squ_value* v = squ_var_get(ctx,lhs->v.id);
+              v->t = SQU_VALUE_INT;
+              v->v.i = v->v.i + rhs->v.i;
+              squ_var_reset(ctx,lhs->v.id,v);
+              return v;
+              break;
+            }
+          case SQU_VALUE_DOUBLE:
+            {
+              squ_value* v = squ_var_get(ctx,lhs->v.id);
+              v->t = SQU_VALUE_DOUBLE;
+              v->v.d = v->v.d + rhs->v.d;
+              squ_var_reset(ctx,lhs->v.id,v);
+              return v;
+              break;
+            }
+          }
+        }
       }
+
+
       if (*nop->op == '-' && *(nop->op+1) == '\0') {
         squ_value* rhs = node_expr(ctx, nop->rhs);
         if (ctx->exc != NULL) 
           return NULL;
-        if (lhs->t == SQU_VALUE_DOUBLE && rhs->t == SQU_VALUE_DOUBLE)
+       else if (lhs->t == SQU_VALUE_DOUBLE && rhs->t == SQU_VALUE_DOUBLE)
         {
           squ_value* new = malloc(sizeof(squ_value));
           new->t = SQU_VALUE_DOUBLE;
           new->v.d = lhs->v.d - rhs->v.d;
           return new;
         }
-        if (lhs->t == SQU_VALUE_INT && rhs->t == SQU_VALUE_INT)
+        else if (lhs->t == SQU_VALUE_INT && rhs->t == SQU_VALUE_INT)
         {
           squ_value* new = malloc(sizeof(squ_value));
           new->t = SQU_VALUE_INT;
           new->v.i = lhs->v.i - rhs->v.i;
           return new;
         }
+        else if(lhs->t == SQU_VALUE_IDENT)
+        {
+          switch (rhs->t)
+          {
+          case SQU_VALUE_INT:
+            {
+              squ_value* v = squ_var_get(ctx,lhs->v.id);
+              v->t = SQU_VALUE_INT;
+              v->v.i = v->v.i - rhs->v.i;
+              squ_var_reset(ctx,lhs->v.id,v);
+              return v;
+              break;
+            }
+          case SQU_VALUE_DOUBLE:
+            {
+              squ_value* v = squ_var_get(ctx,lhs->v.id);
+              v->t = SQU_VALUE_DOUBLE;
+              v->v.d = v->v.d - rhs->v.d;
+              squ_var_reset(ctx,lhs->v.id,v);
+              return v;
+              break;
+            }
+          }
+        }
       }
+
+
       if (*nop->op == '*' && *(nop->op+1) == '\0') 
       {
         squ_value* rhs = node_expr(ctx, nop->rhs);
         if (ctx->exc != NULL) 
           return NULL;
-        if (lhs->t == SQU_VALUE_DOUBLE && rhs->t == SQU_VALUE_DOUBLE) 
+        else if (lhs->t == SQU_VALUE_DOUBLE && rhs->t == SQU_VALUE_DOUBLE) 
         {
           squ_value* new = malloc(sizeof(squ_value));
           new->t = SQU_VALUE_DOUBLE;
           new->v.d = lhs->v.d * rhs->v.d;
           return new;
         }
-        if (lhs->t == SQU_VALUE_INT && rhs->t == SQU_VALUE_INT)
+        else if (lhs->t == SQU_VALUE_INT && rhs->t == SQU_VALUE_INT)
         {
           squ_value* new = malloc(sizeof(squ_value));
           new->t = SQU_VALUE_INT;
           new->v.i = lhs->v.i * rhs->v.i;
           return new;
         }
+        else if(lhs->t == SQU_VALUE_IDENT)
+        {
+          switch (rhs->t)
+          {
+          case SQU_VALUE_INT:
+            {
+              squ_value* v = squ_var_get(ctx,lhs->v.id);
+              v->t = SQU_VALUE_INT;
+              v->v.i = v->v.i * rhs->v.i;
+              squ_var_reset(ctx,lhs->v.id,v);
+              return v;
+              break;
+            }
+          case SQU_VALUE_DOUBLE:
+            {
+              squ_value* v = squ_var_get(ctx,lhs->v.id);
+              v->t = SQU_VALUE_DOUBLE;
+              v->v.d = v->v.d * rhs->v.d;
+              squ_var_reset(ctx,lhs->v.id,v);
+              return v;
+              break;
+            }
+          }
+        }
       }
+
+
       if (*nop->op == '/' && *(nop->op+1) == '\0') 
       {
         squ_value* rhs = node_expr(ctx, nop->rhs);
         if (ctx->exc != NULL) 
           return NULL;
-        if (lhs->t == SQU_VALUE_DOUBLE && rhs->t == SQU_VALUE_DOUBLE) 
+        else if (lhs->t == SQU_VALUE_DOUBLE && rhs->t == SQU_VALUE_DOUBLE) 
         {
           squ_value* new = malloc(sizeof(squ_value));
           new->t = SQU_VALUE_DOUBLE;
@@ -244,14 +260,40 @@ node_expr(squ_ctx* ctx, node* np)
           new->v.d = lhs->v.d / rhs->v.d;
           return new;
         }
-        if (lhs->t == SQU_VALUE_INT && rhs->t == SQU_VALUE_INT)
+        else if (lhs->t == SQU_VALUE_INT && rhs->t == SQU_VALUE_INT)
         {
           squ_value* new = malloc(sizeof(squ_value));
           new->t = SQU_VALUE_INT;
           new->v.i = lhs->v.i / rhs->v.i;
           return new;
         }
+        else if(lhs->t == SQU_VALUE_IDENT)
+        {
+          switch (rhs->t)
+          {
+          case SQU_VALUE_INT:
+            {
+              squ_value* v = squ_var_get(ctx,lhs->v.id);
+              v->t = SQU_VALUE_INT;
+              v->v.i = v->v.i / rhs->v.i;
+              squ_var_reset(ctx,lhs->v.id,v);
+              return v;
+              break;
+            }
+          case SQU_VALUE_DOUBLE:
+            {
+              squ_value* v = squ_var_get(ctx,lhs->v.id);
+              v->t = SQU_VALUE_DOUBLE;
+              v->v.d = v->v.d / rhs->v.d;
+              squ_var_reset(ctx,lhs->v.id,v);
+              return v;
+              break;
+            }
+          }
+        }
       }
+
+      
       if (*nop->op == '%' && *(nop->op+1) == '\0') 
       {
         squ_value* rhs = node_expr(ctx, nop->rhs);
@@ -265,7 +307,17 @@ node_expr(squ_ctx* ctx, node* np)
           new->v.i = lhs->v.i % rhs->v.i;
           return new;
         }
+        if (lhs->t == SQU_VALUE_IDENT && rhs->t == SQU_VALUE_INT)
+        {
+          squ_value* v = squ_var_get(ctx,lhs->v.id);
+          v->t = SQU_VALUE_INT;
+          v->v.i = v->v.i % rhs->v.i;
+          squ_var_reset(ctx,lhs->v.id,v);
+          return v;
+        } 
       }
+
+
       if (*nop->op == '<') 
       {
         squ_value* rhs = node_expr(ctx, nop->rhs);
@@ -291,7 +343,51 @@ node_expr(squ_ctx* ctx, node* np)
             new->v.b = lhs->v.i < rhs->v.i;
           return new;
         }
+        if(lhs->t == SQU_VALUE_IDENT)
+        {
+          switch (rhs->t)
+          {
+          case SQU_VALUE_INT:
+          {
+            squ_value* v = squ_var_get(ctx,lhs->v.id);
+            squ_value* new = malloc(sizeof(squ_value));
+            new->t = SQU_VALUE_BOOL;
+            if(*(nop->op+1) == '=')
+            {
+              new ->v.b = v->v.i <= rhs->v.i;
+            }
+            else
+            {
+              new ->v.b = v->v.i < rhs->v.i; 
+            }
+            return new;
+            break;
+          }
+          case SQU_VALUE_DOUBLE:
+           {
+            squ_value* v = squ_var_get(ctx,lhs->v.id);
+            squ_value* new = malloc(sizeof(squ_value));
+            new->t = SQU_VALUE_BOOL;
+            if(*(nop->op+1) == '=')
+            {
+              new ->v.b = v->v.d <= rhs->v.d;
+            }
+            else
+            {
+              new ->v.b = v->v.d < rhs->v.d; 
+            }
+            return new;
+            break;
+          }
+          case SQU_VALUE_IDENT:
+            break;
+          default:
+            break;
+          }
+        }
       }
+
+
       if (*nop->op == '>') 
       {
         squ_value* rhs = node_expr(ctx, nop->rhs);
@@ -317,7 +413,51 @@ node_expr(squ_ctx* ctx, node* np)
             new->v.b = lhs->v.i > rhs->v.i;
           return new;
         }
+        if(lhs->t == SQU_VALUE_IDENT)
+        {
+          switch (rhs->t)
+          {
+          case SQU_VALUE_INT:
+          {
+            squ_value* v = squ_var_get(ctx,lhs->v.id);
+            squ_value* new = malloc(sizeof(squ_value));
+            new->t = SQU_VALUE_BOOL;
+            if(*(nop->op+1) == '=')
+            {
+              new ->v.b = v->v.i >= rhs->v.i;
+            }
+            else
+            {
+              new ->v.b = v->v.i > rhs->v.i; 
+            }
+            return new;
+            break;
+          }
+          case SQU_VALUE_DOUBLE:
+           {
+            squ_value* v = squ_var_get(ctx,lhs->v.id);
+            squ_value* new = malloc(sizeof(squ_value));
+            new->t = SQU_VALUE_BOOL;
+            if(*(nop->op+1) == '=')
+            {
+              new ->v.b = v->v.d >= rhs->v.d;
+            }
+            else
+            {
+              new ->v.b = v->v.d > rhs->v.d; 
+            }
+            return new;
+            break;
+          }
+          case SQU_VALUE_IDENT:
+            break;
+          default:
+            break;
+          }
+        }
       }
+
+
       if (*nop->op == '=' && (*(nop->op+1)) == '=') 
       {
         squ_value* rhs = node_expr(ctx, nop->rhs);
@@ -337,7 +477,37 @@ node_expr(squ_ctx* ctx, node* np)
           new->v.b = lhs->v.i == rhs->v.i;
           return new;
         }
+        if(lhs->t == SQU_VALUE_IDENT)
+        {
+          switch (rhs->t)
+          {
+          case SQU_VALUE_INT:
+          {
+            squ_value* new = malloc(sizeof(squ_value));
+            squ_value* v = squ_var_get(ctx,lhs->v.id);
+            new->t = SQU_VALUE_BOOL;
+            new->v.b = v->v.i == rhs->v.i;
+            return new;
+            break;
+          }
+          case SQU_VALUE_DOUBLE:
+           {
+            squ_value* new = malloc(sizeof(squ_value));
+            squ_value* v = squ_var_get(ctx,lhs->v.id);
+            new->t = SQU_VALUE_BOOL;
+            new->v.b = v->v.d == rhs->v.d;
+            return new;
+            break;
+           }
+          case SQU_VALUE_IDENT:
+            break;
+          default:
+            break;
+          }
+        }
       }
+
+
       if (*nop->op == '!' && (*(nop->op+1)) == '=') {
         squ_value* rhs = node_expr(ctx, nop->rhs);
         if (ctx->exc != NULL) 
@@ -356,8 +526,35 @@ node_expr(squ_ctx* ctx, node* np)
           new->v.b = lhs->v.i != rhs->v.i;
           return new;
         }
+        if(lhs->t == SQU_VALUE_IDENT)
+        {
+          switch (rhs->t)
+          {
+          case SQU_VALUE_INT:
+          {
+            squ_value* new = malloc(sizeof(squ_value));
+            squ_value* v = squ_var_get(ctx,lhs->v.id);
+            new->t = SQU_VALUE_BOOL;
+            new->v.b = v->v.i != rhs->v.i;
+            return new;
+            break;
+          }
+          case SQU_VALUE_DOUBLE:
+           {
+            squ_value* new = malloc(sizeof(squ_value));
+            squ_value* v = squ_var_get(ctx,lhs->v.id);
+            new->t = SQU_VALUE_BOOL;
+            new->v.b = v->v.d != rhs->v.d;
+            return new;
+            break;
+           }
+          case SQU_VALUE_IDENT:
+            break;
+          default:
+            break;
+          }
+        }
       }
-      
       squ_raise(ctx, "invalid operator");
     }
     break;
@@ -424,8 +621,11 @@ node_expr(squ_ctx* ctx, node* np)
     return &np->value;
     break;
   case NODE_IDENT:
-    return &np->value;
+  {
+    /* TODO: return the identifier's value */
+    return &np->value; 
     break;
+  }
   default:
     break;
   }
