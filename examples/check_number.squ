@@ -1,0 +1,17 @@
+# TODO: use input function #
+a := 10
+# You can replace "==" with "is" #
+if(a % 2 is 0)
+{
+    print("This is a even number(use if)")
+}
+else
+{
+    print("This is a odd number")
+}
+# Use 'when' statement #
+when(a % 2 is 0)       # when(a % 2 == 0) #
+{
+    print("This is a even number(use when)")   
+}
+# Note: 'when' statement do not has 'else' part #

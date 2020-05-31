@@ -315,6 +315,20 @@ node_if_new(node* cond, node* stmt_seq, node* opt_else)
 }
 
 node*
+node_loop_new(node* stmt_seq, node* cond)
+{
+  node_loop* nloop = malloc(sizeof(node_loop));
+  nloop -> stmt_seq = stmt_seq;
+  nloop -> cond = cond;
+
+  node* np = malloc(sizeof(node));
+  np -> type = NODE_LOOP;
+  np -> value.t = SQU_VALUE_USER;
+  np -> value.v.p = nloop;
+  return np;
+}
+
+node*
 node_return_new(node* value)
 {
   node* np = malloc(sizeof(node));

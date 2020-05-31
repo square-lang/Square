@@ -90,7 +90,7 @@ typedef enum
 
 #define MAXTOKENLEN 80
 #define MAXFUNCNAME 50
-#define MAXRESERVED 11
+#define MAXRESERVED 15
 
 /* lexeme of identifier or reserved word */
 char tokenString[MAXTOKENLEN+1];
@@ -195,10 +195,22 @@ static struct
       char* str;
       int tok;
     } reservedWords[MAXRESERVED]
-   = {{"if",keyword_if},{"else",keyword_else},{"null",keyword_null},
-      {"import",keyword_import},{"false",keyword_false},{"true",keyword_false},
-      {"break",keyword_break},{"return",keyword_return},{"goto",keyword_goto},
-      {"block",keyword_block},{"func",keyword_func},{"class",keyword_class}
+   = {
+      {"if",keyword_if},
+      {"else",keyword_else},
+      {"null",keyword_null},
+      {"import",keyword_import},
+      {"false",keyword_false},
+      {"true",keyword_false},
+      {"break",keyword_break},
+      {"return",keyword_return},
+      {"goto",keyword_goto},
+      {"block",keyword_block},
+      {"func",keyword_func},
+      {"class",keyword_class},
+      {"loop",keyword_loop},
+      {"when",keyword_when},
+      {"is",keyword_is}
     };
 
 /* look for existing keyword*/
@@ -574,6 +586,9 @@ static void yywarnning(parser_state* p,const char* s);
         keyword_block
         keyword_func
         keyword_class
+        keyword_loop
+        keyword_when
+        keyword_is
 
 %token
         op_add
@@ -619,7 +634,7 @@ static void yywarnning(parser_state* p,const char* s);
 %left  op_bar
 %left  op_or
 %left  op_and
-%nonassoc  op_eq op_neq
+%nonassoc  op_eq op_neq keyword_is
 %left  op_lt op_le op_gt op_ge
 %left  op_add op_sub
 %left  op_mul op_div op_mod
@@ -748,6 +763,10 @@ expr            : expr op_add expr
                     {
                       $$ = node_op_new("==", $1, $3);
                     }
+                | expr keyword_is expr
+                    {
+                      $$ = node_op_new("==", $1, $3);
+                    }
                 | expr op_neq expr
                     {
                       $$ = node_op_new("!=", $1, $3);
@@ -827,6 +846,10 @@ condition       : condition op_add condition
                       $$ = node_op_new("<=", $1, $3);
                     }
                 | condition op_eq condition
+                    {
+                      $$ = node_op_new("==", $1, $3);
+                    }
+                | condition keyword_is condition
                     {
                       $$ = node_op_new("==", $1, $3);
                     }
@@ -940,6 +963,10 @@ primary0        : lit_number
                     {
                       $$ = node_if_new($3, $6, $8);
                     }
+                | keyword_when op_lp condition op_rp op_flp stmt_seq op_frp
+                    {
+                     $$ = node_if_new($3, $6, NULL);
+                    }
                 | keyword_null
                     {
                       $$ = node_null();
@@ -984,6 +1011,10 @@ primary         : primary0
                 | identifier op_lp opt_args op_rp opt_block
                     {
                       $$ = node_call_new(NULL, node_ident_new($1), $3, $5);
+                    }
+                | keyword_loop op_flp stmt_seq op_frp keyword_when op_lp condition op_rp
+                    {
+                      $$ = node_loop_new($3, $7);
                     }
                 | keyword_func identifier op_lp opt_args op_rp opt_block
                     {

@@ -94,6 +94,42 @@ node_expr(squ_ctx* ctx, node* np)
       }
     }
     break;
+
+  case NODE_LOOP:
+    {
+      node_loop* nloop = np->value.v.p;
+      squ_value* v = node_expr(ctx, nloop->cond);
+      if (ctx->exc != NULL)
+      {
+        return NULL;
+      }
+      if(v->t == SQU_VALUE_BOOL)
+      {
+        while(v->v.b = TRUE)
+        {
+          node_expr_stmt(ctx, nloop->stmt_seq);
+          v = node_expr(ctx, nloop->cond);
+          if(v->t == SQU_VALUE_BOOL)
+          {
+            if(v->v.b == FALSE)
+            {
+              break;
+            }
+            else
+            {
+              continue;
+            }
+          }
+          else
+          {
+            squ_raise(ctx,"The condtion should be bool");
+            break;
+          }
+        }
+      }
+    }
+    break;
+
   case NODE_OP:
     {
       node_op* nop = np->value.v.p;

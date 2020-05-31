@@ -9,6 +9,7 @@ typedef enum {
   NODE_CFUNC,
   NODE_BLOCK,
   NODE_IDENT,
+  NODE_LOOP,
   NODE_LET,
   NODE_IF,
   NODE_EMIT,
@@ -40,6 +41,13 @@ typedef struct {
   node* stmt_seq;
   node* opt_else;
 } node_if;
+
+typedef struct{
+  node_type type;
+  node* stmt_seq;
+  node* cond;
+}node_loop;
+
 
 typedef struct {
   node_type type;
@@ -95,6 +103,7 @@ extern node* node_int_new(squ_int);
 extern node* node_string_new(squ_string);
 extern node* node_string_len_new(squ_string, size_t);
 extern node* node_if_new(node*, node*, node*);
+extern node* node_loop_new(node*, node*);
 extern node* node_return_new(node*);
 extern node* node_import_new(squ_id);
 extern node* node_break_new();

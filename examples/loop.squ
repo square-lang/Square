@@ -1,0 +1,19 @@
+times := 10
+loop
+{
+    print("hello world")
+    times := times - 1
+}when(times != 0)
+
+# Result
+hello world
+hello world
+hello world
+hello world
+hello world
+hello world
+hello world
+hello world
+hello world
+hello world
+#

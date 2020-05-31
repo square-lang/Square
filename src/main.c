@@ -40,6 +40,15 @@ dump_node(node* np, int indent) {
       }
     }
     break;
+  case NODE_LOOP:
+    {
+      printf("LOOP:\n");
+      dump_node(((node_loop*)np->value.v.p)->cond,indent+1);
+      for (i = 0; i < indent; i++)
+        putchar(' ');
+      dump_node(((node_loop*)np->value.v.p)->stmt_seq,indent+1);
+    }
+    break;
   case NODE_OP:
     printf("OP:\n");
     dump_node(((node_op*) np->value.v.p)->lhs, indent+1);
