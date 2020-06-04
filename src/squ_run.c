@@ -111,13 +111,13 @@ node_expr(squ_ctx* ctx, node* np)
           v = node_expr(ctx, nloop->cond);
           if(v->t == SQU_VALUE_BOOL)
           {
-            if(v->v.b == FALSE)
+            if(v->v.b != FALSE)
             {
-              break;
+              continue;
             }
             else
             {
-              continue;
+              break;
             }
           }
           else
@@ -631,6 +631,7 @@ node_expr(squ_ctx* ctx, node* np)
       }
     }
     break;
+
   case NODE_RETURN:
     {
       node_return* nreturn = np->value.v.p;
@@ -639,6 +640,7 @@ node_expr(squ_ctx* ctx, node* np)
       return NULL;
     }
     break;
+
   case NODE_LET:
     {
       node_let* nlet = np->value.v.p;
@@ -649,10 +651,18 @@ node_expr(squ_ctx* ctx, node* np)
       v_l = node_expr(ctx, nlet->lhs);
       if(v_l != NULL)
       {
-        squ_var_def(ctx,v_l->v.id,v_r);
+        if(v_r->t == SQU_VALUE_IDENT)
+        {
+          squ_var_def(ctx,v_l->v.id,squ_var_get(ctx,v_r->v.id));
+        }
+        else
+        {
+          squ_var_def(ctx,v_l->v.id,v_r);
+        }
       }
     }
     break;
+    
   case NODE_VALUE:
     return &np->value;
     break;

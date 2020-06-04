@@ -221,6 +221,11 @@ node_free(node* np) {
     node_free(((node_call*) np->value.v.p)->blk);
     free(np);
     break;
+  case NODE_LOOP:
+    node_free(((node_loop*) np->value.v.p)->cond);
+    node_free(((node_loop*) np->value.v.p)->stmt_seq);
+    free(np);
+    break;
   case NODE_RETURN:
     node_free((node*) np->value.v.p);
     free(np);
