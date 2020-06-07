@@ -6,3 +6,4 @@ func hello()
 }
 # Call the function #
 hello()
+# Note: function args can not work now #

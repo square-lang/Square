@@ -61,37 +61,41 @@ extern int yydebug;
      keyword_loop = 270,
      keyword_when = 271,
      keyword_is = 272,
-     op_add = 273,
-     op_sub = 274,
-     op_mul = 275,
-     op_div = 276,
-     op_mod = 277,
-     op_eq = 278,
-     op_neq = 279,
-     op_lt = 280,
-     op_le = 281,
-     op_gt = 282,
-     op_ge = 283,
-     op_and = 284,
-     op_or = 285,
-     op_bar = 286,
-     op_amper = 287,
-     op_next = 288,
-     op_assign = 289,
-     op_lp = 290,
-     op_rp = 291,
-     op_flp = 292,
-     op_frp = 293,
-     ERROR = 294,
-     ENDFILE = 295,
-     lit_number = 296,
-     lit_string = 297,
-     lit_true = 298,
-     lit_false = 299,
-     lit_null = 300,
-     identifier = 301,
-     op_LOWEST = 302,
-     op_HIGHEST = 303
+     keyword_not = 273,
+     keyword_lambda = 274,
+     op_add = 275,
+     op_sub = 276,
+     op_mul = 277,
+     op_div = 278,
+     op_mod = 279,
+     op_eq = 280,
+     op_neq = 281,
+     op_lt = 282,
+     op_le = 283,
+     op_gt = 284,
+     op_ge = 285,
+     op_and = 286,
+     op_or = 287,
+     op_bar = 288,
+     op_amper = 289,
+     op_next = 290,
+     op_assign = 291,
+     op_lp = 292,
+     op_rp = 293,
+     op_flp = 294,
+     op_frp = 295,
+     op_comma = 296,
+     op_colon = 297,
+     ENDFILE = 298,
+     ERROR = 299,
+     lit_number = 300,
+     lit_string = 301,
+     lit_true = 302,
+     lit_false = 303,
+     lit_null = 304,
+     identifier = 305,
+     op_LOWEST = 306,
+     op_HIGHEST = 307
    };
 #endif
 
@@ -100,14 +104,14 @@ extern int yydebug;
 typedef union YYSTYPE
 {
 /* Line 2058 of yacc.c  */
-#line 522 "parse.y"
+#line 533 "parse.y"
 
   node* nd;
   squ_string id;
 
 
 /* Line 2058 of yacc.c  */
-#line 111 "parse.tab.h"
+#line 115 "parse.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

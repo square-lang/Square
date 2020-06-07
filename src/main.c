@@ -74,6 +74,19 @@ dump_node(node* np, int indent) {
     dump_node(((node_call*) np->value.v.p)->args, indent+2);
     dump_node(((node_call*) np->value.v.p)->blk, indent+2);
     break;
+  case NODE_LAMBDA:
+    printf("LAMBDA:\n");
+    printf("ARGS:\n");
+    dump_node(((node_lambda*) np->value.v.p)->args,indent+2);
+    printf("BODY:\n");
+    dump_node(((node_lambda*) np->value.v.p)->body,indent+2);
+    break;
+  case NODE_FDEF:
+    printf("FUNCTION DEF:\n");
+    dump_node(((node_fdef*) np->value.v.p)->ident, indent+2);
+    dump_node(((node_fdef*) np->value.v.p)->args, indent+2);
+    dump_node(((node_fdef*) np->value.v.p)->blk, indent+2);
+    break;
   case NODE_RETURN:
     printf("RETURN:\n");
     dump_node(((node_return*) np->value.v.p)->rv, indent+1);
@@ -221,9 +234,19 @@ node_free(node* np) {
     node_free(((node_call*) np->value.v.p)->blk);
     free(np);
     break;
+  case NODE_FDEF:
+    node_free(((node_fdef*) np->value.v.p)->ident);
+    node_free(((node_fdef*) np->value.v.p)->args);
+    node_free(((node_fdef*) np->value.v.p)->blk);
+    break;
   case NODE_LOOP:
     node_free(((node_loop*) np->value.v.p)->cond);
     node_free(((node_loop*) np->value.v.p)->stmt_seq);
+    free(np);
+    break;
+  case NODE_LAMBDA:
+    node_free(((node_lambda*)np->value.v.p)->body);
+    node_free(((node_lambda*)np->value.v.p)->args);
     free(np);
     break;
   case NODE_RETURN:

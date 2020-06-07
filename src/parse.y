@@ -90,7 +90,7 @@ typedef enum
 
 #define MAXTOKENLEN 80
 #define MAXFUNCNAME 50
-#define MAXRESERVED 15
+#define MAXRESERVED 17
 
 /* lexeme of identifier or reserved word */
 char tokenString[MAXTOKENLEN+1];
@@ -210,7 +210,9 @@ static struct
       {"class",keyword_class},
       {"loop",keyword_loop},
       {"when",keyword_when},
-      {"is",keyword_is}
+      {"is",keyword_is},
+      {"not",keyword_not},
+      {"lambda",keyword_lambda}
     };
 
 /* look for existing keyword*/
@@ -347,6 +349,12 @@ TokenType getToken(YYSTYPE* yylval,parser_state* p){
             case '}':
               result = op_frp;
             break;
+            case ',':
+              result = op_comma;
+            break;
+            case ':':
+              result = op_colon;
+            break;
           }
         }
       break;
@@ -372,7 +380,10 @@ TokenType getToken(YYSTYPE* yylval,parser_state* p){
         {
           ungetNextChar();
           save = FALSE;
-          result = ERROR;
+        }
+        if(c == ' ')
+        {
+          result = op_colon;
         }
       break;
       case INNUM:
@@ -537,6 +548,7 @@ yylex(YYSTYPE *yylval,parser_state* p)
       cond
       primary
       primary0
+      lambda_stmt
 
 %type <nd> 
       stmts 
@@ -589,6 +601,8 @@ static void yywarnning(parser_state* p,const char* s);
         keyword_loop
         keyword_when
         keyword_is
+        keyword_not
+        keyword_lambda
 
 %token
         op_add
@@ -612,10 +626,12 @@ static void yywarnning(parser_state* p,const char* s);
         op_rp
         op_flp
         op_frp
+        op_comma
+        op_colon
 
 %token
-        ERROR
         ENDFILE
+        ERROR
 
 %token
         lit_number
@@ -671,10 +687,6 @@ stmts           :
                     {
                       $$ = $1;
                       node_array_add($1, $3);
-                    }
-                | error stmt
-                    {
-
                     }
                 ;
 
@@ -771,6 +783,10 @@ expr            : expr op_add expr
                     {
                       $$ = node_op_new("!=", $1, $3);
                     }
+                | expr keyword_is keyword_not expr
+                    {
+                      $$ = node_op_new("!=", $1, $4);
+                    }
                 | op_add expr                 %prec '!'
                     {
                       $$ = node_value_new($2);
@@ -780,6 +796,10 @@ expr            : expr op_add expr
                       $$ = node_value_new($2);
                     }
                 | '!' expr
+                    {
+                      $$ = node_op_new("!", NULL, $2);
+                    }
+                | keyword_not expr
                     {
                       $$ = node_op_new("!", NULL, $2);
                     }
@@ -857,6 +877,10 @@ condition       : condition op_add condition
                     {
                       $$ = node_op_new("!=", $1, $3);
                     }
+                | condition keyword_is keyword_not condition
+                    {
+                      $$ = node_op_new("!=", $1, $4);
+                    }
                 | op_add condition            %prec '!'
                     {
                       $$ = node_value_new($2);
@@ -922,7 +946,7 @@ args            : expr
                       $$ = node_array_new();
                       node_array_add($$, $1);
                     }
-                | args ',' expr
+                | args op_comma expr
                     {
                       $$ = $1;
                       node_array_add($1, $3);
@@ -1008,17 +1032,17 @@ primary         : primary0
                     {
                       $$ = node_call_new(NULL, node_ident_new($2), NULL, $3);
                     }
-                | identifier op_lp opt_args op_rp opt_block
+                | identifier op_lp opt_args op_rp
                     {
-                      $$ = node_call_new(NULL, node_ident_new($1), $3, $5);
+                      $$ = node_call_new(NULL, node_ident_new($1), $3, NULL);
                     }
                 | keyword_loop op_flp stmt_seq op_frp keyword_when op_lp condition op_rp
                     {
                       $$ = node_loop_new($3, $7);
                     }
-                | keyword_func identifier op_lp opt_args op_rp opt_block
+                | keyword_func identifier op_lp opt_args op_rp op_flp stmt_seq op_frp
                     {
-                      $$ = node_call_new(NULL,node_ident_new($2), $4, $6);
+                      $$ = node_fdef_new(node_ident_new($2), $4, $7);
                     }
                 | primary '.' identifier op_lp opt_args op_rp opt_block
                     {
@@ -1027,6 +1051,16 @@ primary         : primary0
                 | primary '.' identifier opt_block
                     {
                       $$ = node_call_new($1, node_ident_new($3), NULL, $4);
+                    }
+                | lambda_stmt
+                    {
+                      $$ = $1;
+                    }
+                ;
+
+lambda_stmt     : op_lp keyword_lambda opt_args op_colon stmt_seq op_rp
+                    {
+                      $$ = node_lambda_new($3,$5);
                     }
                 ;
 
@@ -1045,7 +1079,7 @@ map_args        : map
                       $$ = node_map_new();
                       node_array_add($$, $1);
                     }
-                | map_args ',' map
+                | map_args op_comma map
                     {
                       $$ = $1;
                       node_array_add($$, $3);
@@ -1087,7 +1121,7 @@ f_args          : identifier
                       $$ = node_array_new();
                       node_array_add($$, node_ident_new($1));
                     }
-                | f_args ',' identifier
+                | f_args op_comma identifier
                     {
                       $$ = $1;
                       node_array_add($$, node_ident_new($3));
@@ -1106,7 +1140,6 @@ terms           : term
                 ;
 
 term            : ' ' 
-                | op_and
                 | ';'
                 | '\n'
                 ;

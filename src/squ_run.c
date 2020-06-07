@@ -109,15 +109,16 @@ node_expr(squ_ctx* ctx, node* np)
         {
           node_expr_stmt(ctx, nloop->stmt_seq);
           v = node_expr(ctx, nloop->cond);
+          
           if(v->t == SQU_VALUE_BOOL)
           {
-            if(v->v.b != FALSE)
+            if(v->v.b == FALSE)
             {
-              continue;
+              break;
             }
             else
             {
-              break;
+              continue;
             }
           }
           else
@@ -125,6 +126,7 @@ node_expr(squ_ctx* ctx, node* np)
             squ_raise(ctx,"The condtion should be bool");
             break;
           }
+          
         }
       }
     }
@@ -612,22 +614,42 @@ node_expr(squ_ctx* ctx, node* np)
               squ_array_add(arr1, node_expr(ctx, arr0->data[i]));
             ((squ_cfunc) v->v.p)(ctx, arr1);
           }
+          else if(v->t == SQU_VALUE_USER)
+          {
+            //node_expr_stmt(ctx,lambda->body);
+          }
         }
         else 
         {
           squ_raise(ctx, "function not found!");
         }
       } 
-      if(ncall->blk != NULL)
+    }
+    break;
+  case NODE_LAMBDA:
+    {
+      node_lambda* nlambda = np->value.v.p;
+    }
+    break;
+  case NODE_FDEF:
+    {
+      node_fdef* nfdef = np->value.v.p;
+      if(nfdef->args != NULL)
       {
-        node_block* nblk = ncall->blk->value.v.p;
-        node_expr_stmt(ctx, nblk->stmt_seq);
-        if (ctx->exc != NULL) {
-          squ_value* arg = ctx->exc->arg;
-          free(ctx->exc);
-          ctx->exc = NULL;
-          return arg;
-        }
+        squ_var_def(ctx, nfdef->args->value.v.id, NULL);
+      }
+      if(nfdef->blk != NULL)
+      {
+        squ_lambda* lambda = malloc(sizeof(squ_lambda));
+        lambda->body = (node*)nfdef->blk;
+        puts(nfdef->ident->value.v.id);
+        int r;
+        khiter_t k;
+        static squ_value v;
+        k = kh_put(value,ctx->env,nfdef->ident->value.v.id,&r);
+        v.t = SQU_VALUE_USER;
+        v.v.p = NULL;
+        kh_value(ctx->env,k) = &v;
       }
     }
     break;

@@ -3,7 +3,7 @@ loop
 {
     print("hello world")
     times := times - 1
-}when(times != 0)
+}when(times is not 0)
 
 # Result
 hello world

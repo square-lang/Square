@@ -12,8 +12,9 @@ typedef enum {
   NODE_LOOP,
   NODE_LET,
   NODE_IF,
-  NODE_EMIT,
+  NODE_FDEF,
   NODE_RETURN,
+  NODE_LAMBDA,
   NODE_BREAK,
   NODE_VAR,
   NODE_CONST,
@@ -76,6 +77,24 @@ typedef struct {
   node* blk;
 } node_call;
 
+typedef struct{
+  node_type type;
+  node* args;
+  node* body;
+}node_lambda;
+
+typedef struct squ_lambda{
+  node* body;
+  node* args;
+}squ_lambda;
+
+typedef struct {
+  node_type type;
+  node* ident;
+  node* args;
+  node* blk;
+}node_fdef;
+
 typedef struct {
   node_type type;
   node* rv;
@@ -98,6 +117,8 @@ extern node* node_let_new(node*, node*);
 extern node* node_op_new(char*, node*, node*);
 extern node* node_block_new(node*, node*);
 extern node* node_call_new(node*, node*, node*, node*);
+extern node* node_lambda_new(node*, node*);
+extern node* node_fdef_new(node*, node*, node*);
 extern node* node_double_new(squ_double);
 extern node* node_int_new(squ_int);
 extern node* node_string_new(squ_string);

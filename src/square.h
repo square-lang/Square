@@ -2,6 +2,7 @@
 #define _SQU_H_
 #include <stdio.h>
 #include <stdint.h>
+
 #include "khash.h"
 
 #ifndef TRUE

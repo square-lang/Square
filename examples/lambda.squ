@@ -1,0 +1,3 @@
+# Note: lambda can not run now #
+a := (lambda x : x + 1)
+a(1)

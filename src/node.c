@@ -217,6 +217,35 @@ node_call_new(node* cond, node* ident, node* args, node* blk)
 }
 
 node*
+node_lambda_new(node* args, node* body)
+{
+  node_lambda* nlambda = malloc(sizeof(node_lambda));
+  nlambda->args = args;
+  nlambda->body = body;
+
+  node* np = malloc(sizeof(node));
+  np->type = NODE_LAMBDA;
+  np->value.t = SQU_VALUE_USER;
+  np->value.v.p = nlambda;
+  return np;
+}
+
+node*
+node_fdef_new(node* ident, node* args, node* blk)
+{
+  node_fdef* nfdef = malloc(sizeof(node_fdef));
+  nfdef->ident = ident;
+  nfdef->args = args;
+  nfdef->blk = blk;
+
+  node* np = malloc(sizeof(node));
+  np->type = NODE_FDEF;
+  np->value.t = SQU_VALUE_USER;
+  np->value.v.p = nfdef;
+  return np;
+}
+
+node*
 node_double_new(squ_double d)
 {
   node* np = malloc(sizeof(node));
