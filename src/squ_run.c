@@ -5,6 +5,7 @@
 #include <stdio.h>
 
 squ_value* node_expr(squ_ctx*, node*);
+squ_lambda* lambda;
 
 squ_value*
 node_expr_stmt(squ_ctx* ctx, node* np)
@@ -616,7 +617,15 @@ node_expr(squ_ctx* ctx, node* np)
           }
           else if(v->t == SQU_VALUE_USER)
           {
-            //node_expr_stmt(ctx,lambda->body);
+            node_array* arr0 = ncall->args->value.v.p;
+            squ_array* arr1 = squ_array_new();
+            int i;
+            for(i = 0; i < arr0->len; i++)
+            {
+              squ_array_add(arr1, node_expr(ctx, arr0->data[i]));
+              squ_var_def(ctx,lambda->args->value.v.id,arr0->data[i]);
+            }
+            node_expr_stmt(ctx,lambda->body);
           }
         }
         else 
@@ -636,13 +645,13 @@ node_expr(squ_ctx* ctx, node* np)
       node_fdef* nfdef = np->value.v.p;
       if(nfdef->args != NULL)
       {
-        squ_var_def(ctx, nfdef->args->value.v.id, NULL);
+        
       }
       if(nfdef->blk != NULL)
       {
-        squ_lambda* lambda = malloc(sizeof(squ_lambda));
+        lambda = malloc(sizeof(squ_lambda));
         lambda->body = (node*)nfdef->blk;
-        puts(nfdef->ident->value.v.id);
+        lambda->args = (node*)nfdef->args;
         int r;
         khiter_t k;
         static squ_value v;

@@ -84,6 +84,7 @@ dump_node(node* np, int indent) {
   case NODE_FDEF:
     printf("FUNCTION DEF:\n");
     dump_node(((node_fdef*) np->value.v.p)->ident, indent+2);
+    printf("ARGS:\n");
     dump_node(((node_fdef*) np->value.v.p)->args, indent+2);
     dump_node(((node_fdef*) np->value.v.p)->blk, indent+2);
     break;
