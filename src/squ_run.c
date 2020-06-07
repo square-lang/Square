@@ -623,7 +623,8 @@ node_expr(squ_ctx* ctx, node* np)
             for(i = 0; i < arr0->len; i++)
             {
               squ_array_add(arr1, node_expr(ctx, arr0->data[i]));
-              squ_var_def(ctx,lambda->args->value.v.id,arr0->data[i]);
+              squ_value* v = node_expr(ctx, arr0->data[i]);
+              squ_var_reset(ctx,lambda->args->value.v.id,v);
             }
             node_expr_stmt(ctx,lambda->body);
           }
@@ -642,16 +643,25 @@ node_expr(squ_ctx* ctx, node* np)
     break;
   case NODE_FDEF:
     {
+      lambda = malloc(sizeof(squ_lambda));
       node_fdef* nfdef = np->value.v.p;
       if(nfdef->args != NULL)
       {
-        
+        lambda->args = (node*)nfdef->args;
+        node_array* arr0 = nfdef->args->value.v.p;
+        squ_array* arr1 = squ_array_new();
+        int i;
+        for(i = 0; i < arr0->len; i++)
+        {
+          squ_array_add(arr1, node_expr(ctx, arr0->data[i]));
+          squ_value* v = node_expr(ctx, arr0->data[i]);
+          lambda->args->value.v.id = v->v.id;
+          squ_var_def(ctx,v->v.id,NULL);
+        }
       }
       if(nfdef->blk != NULL)
       {
-        lambda = malloc(sizeof(squ_lambda));
         lambda->body = (node*)nfdef->blk;
-        lambda->args = (node*)nfdef->args;
         int r;
         khiter_t k;
         static squ_value v;

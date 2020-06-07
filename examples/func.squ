@@ -1,9 +1,7 @@
-# define a function "hello" #
-func hello()
+# define a function #
+func output(s)
 {
-    # Print the "This is a function" on the screen #
-    cat("This is a function!")
+    print(s)
 }
 # Call the function #
-hello()
-# Note: function args can not work now #
+output("Hello World!")
