@@ -1,11 +1,9 @@
 #include "node.h"
-#include "square.h"
 
 #include <assert.h>
 #include <stdio.h>
 
 squ_value* node_expr(squ_ctx*, node*);
-squ_lambda* lambda;
 
 squ_value*
 node_expr_stmt(squ_ctx* ctx, node* np)
@@ -627,6 +625,9 @@ node_expr(squ_ctx* ctx, node* np)
               squ_var_reset(ctx,lambda->args->value.v.id,v);
             }
             node_expr_stmt(ctx,lambda->body);
+            //free(lambda->body);
+            //free(lambda->args);
+            //free(lambda);
           }
         }
         else 
@@ -802,6 +803,12 @@ squ_run(parser_state* p)
   squ_fun_def(p,"cat",squ_puts);
   squ_fun_def(p,"print",squ_puts);
   node_expr_stmt(&p->ctx, (node*)p->lval);
+  if(lambda != NULL)
+  {
+    free(lambda->args);
+    free(lambda->body);
+    free(lambda);
+  }
   if (p->ctx.exc != NULL) 
   {
     squ_array* arr = squ_array_new();

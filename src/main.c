@@ -221,7 +221,7 @@ node_free(node* np) {
   case NODE_LET:
     node_free(((node_let*) np->value.v.p)->lhs);
     node_free(((node_let*) np->value.v.p)->rhs);
-    node_free(np);
+    free(np);
     break;
   case NODE_BLOCK:
     node_free(((node_block*) np->value.v.p)->args);
@@ -239,6 +239,7 @@ node_free(node* np) {
     node_free(((node_fdef*) np->value.v.p)->ident);
     node_free(((node_fdef*) np->value.v.p)->args);
     node_free(((node_fdef*) np->value.v.p)->blk);
+    free(np);
     break;
   case NODE_LOOP:
     node_free(((node_loop*) np->value.v.p)->cond);
@@ -307,7 +308,7 @@ main(int argc, const char** argv)
   }
 
   if (n == 0) {
-    dump_node(state.lval, 0);
+    /*dump_node(state.lval, 0);*/
     squ_run(&state);
   }
 

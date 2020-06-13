@@ -1,7 +1,6 @@
-# define a function #
 func output(s)
 {
     print(s)
 }
-# Call the function #
-output("Hello World!")
+output("hello world")
+output(5);

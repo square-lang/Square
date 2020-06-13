@@ -135,4 +135,6 @@ extern node* node_true();
 extern node* node_false();
 extern void node_free(node*);
 
+squ_lambda* lambda;
+
 #endif /* _NODE_H_ */
