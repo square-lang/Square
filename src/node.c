@@ -217,11 +217,12 @@ node_call_new(node* cond, node* ident, node* args, node* blk)
 }
 
 node*
-node_lambda_new(node* args, node* body)
+node_lambda_new(node* args, node* body, node* args_value)
 {
   node_lambda* nlambda = malloc(sizeof(node_lambda));
   nlambda->args = args;
   nlambda->body = body;
+  nlambda->args_value = args_value;
 
   node* np = malloc(sizeof(node));
   np->type = NODE_LAMBDA;

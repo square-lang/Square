@@ -175,7 +175,6 @@ node_expr(squ_ctx* ctx, node* np)
               squ_value* v = squ_var_get(ctx,lhs->v.id);
               v->t = SQU_VALUE_INT;
               v->v.i = v->v.i + rhs->v.i;
-              squ_var_reset(ctx,lhs->v.id,v);
               return v;
               break;
             }
@@ -184,7 +183,6 @@ node_expr(squ_ctx* ctx, node* np)
               squ_value* v = squ_var_get(ctx,lhs->v.id);
               v->t = SQU_VALUE_DOUBLE;
               v->v.d = v->v.d + rhs->v.d;
-              squ_var_reset(ctx,lhs->v.id,v);
               return v;
               break;
             }
@@ -220,7 +218,6 @@ node_expr(squ_ctx* ctx, node* np)
               squ_value* v = squ_var_get(ctx,lhs->v.id);
               v->t = SQU_VALUE_INT;
               v->v.i = v->v.i - rhs->v.i;
-              squ_var_reset(ctx,lhs->v.id,v);
               return v;
               break;
             }
@@ -229,7 +226,6 @@ node_expr(squ_ctx* ctx, node* np)
               squ_value* v = squ_var_get(ctx,lhs->v.id);
               v->t = SQU_VALUE_DOUBLE;
               v->v.d = v->v.d - rhs->v.d;
-              squ_var_reset(ctx,lhs->v.id,v);
               return v;
               break;
             }
@@ -266,7 +262,6 @@ node_expr(squ_ctx* ctx, node* np)
               squ_value* v = squ_var_get(ctx,lhs->v.id);
               v->t = SQU_VALUE_INT;
               v->v.i = v->v.i * rhs->v.i;
-              squ_var_reset(ctx,lhs->v.id,v);
               return v;
               break;
             }
@@ -275,7 +270,6 @@ node_expr(squ_ctx* ctx, node* np)
               squ_value* v = squ_var_get(ctx,lhs->v.id);
               v->t = SQU_VALUE_DOUBLE;
               v->v.d = v->v.d * rhs->v.d;
-              squ_var_reset(ctx,lhs->v.id,v);
               return v;
               break;
             }
@@ -313,7 +307,6 @@ node_expr(squ_ctx* ctx, node* np)
               squ_value* v = squ_var_get(ctx,lhs->v.id);
               v->t = SQU_VALUE_INT;
               v->v.i = v->v.i / rhs->v.i;
-              squ_var_reset(ctx,lhs->v.id,v);
               return v;
               break;
             }
@@ -322,7 +315,6 @@ node_expr(squ_ctx* ctx, node* np)
               squ_value* v = squ_var_get(ctx,lhs->v.id);
               v->t = SQU_VALUE_DOUBLE;
               v->v.d = v->v.d / rhs->v.d;
-              squ_var_reset(ctx,lhs->v.id,v);
               return v;
               break;
             }
@@ -340,7 +332,6 @@ node_expr(squ_ctx* ctx, node* np)
         {
           squ_value* new = malloc(sizeof(squ_value));
           new->t = SQU_VALUE_INT;
-
           new->v.i = lhs->v.i % rhs->v.i;
           return new;
         }
@@ -349,7 +340,6 @@ node_expr(squ_ctx* ctx, node* np)
           squ_value* v = squ_var_get(ctx,lhs->v.id);
           v->t = SQU_VALUE_INT;
           v->v.i = v->v.i % rhs->v.i;
-          squ_var_reset(ctx,lhs->v.id,v);
           return v;
         } 
       }
@@ -625,9 +615,6 @@ node_expr(squ_ctx* ctx, node* np)
               squ_var_reset(ctx,lambda->args->value.v.id,v);
             }
             node_expr_stmt(ctx,lambda->body);
-            //free(lambda->body);
-            //free(lambda->args);
-            //free(lambda);
           }
         }
         else 
@@ -640,6 +627,35 @@ node_expr(squ_ctx* ctx, node* np)
   case NODE_LAMBDA:
     {
       node_lambda* nlambda = np->value.v.p;
+      if(lambda == NULL)
+      {
+        lambda = malloc(sizeof(squ_lambda));
+      }
+      if(nlambda->args != NULL)
+      {
+        lambda->args = (node*)nlambda->args;
+        node_array* arr0 = nlambda->args->value.v.p;
+        squ_array* arr1 = squ_array_new();
+        int i;
+        for(i = 0; i < arr0->len; i++)
+        {
+          squ_array_add(arr1, node_expr(ctx, arr0->data[i]));
+          squ_value* v = node_expr(ctx, arr0->data[i]);
+          lambda->args->value.v.id = v->v.id;
+          squ_var_def(ctx,v->v.id,NULL);
+        }
+      }
+      if(nlambda->body != NULL)
+      {
+        lambda->body = (node*)nlambda->body;
+        if(nlambda->args_value != NULL)
+        {
+          lambda->args_value = (node*)nlambda->args_value;
+          squ_value* v = node_expr(ctx,nlambda->args_value);
+          squ_var_reset(ctx, lambda->args->value.v.id,v);
+          node_expr_stmt(ctx,nlambda->body);
+        }
+      }
     }
     break;
   case NODE_FDEF:

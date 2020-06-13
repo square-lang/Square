@@ -1,6 +1,0 @@
-block i
-{
-    import io
-}
-# goto to grade "i" #
-goto @i

@@ -249,6 +249,7 @@ node_free(node* np) {
   case NODE_LAMBDA:
     node_free(((node_lambda*)np->value.v.p)->body);
     node_free(((node_lambda*)np->value.v.p)->args);
+    node_free(((node_lambda*)np->value.v.p)->args_value);
     free(np);
     break;
   case NODE_RETURN:

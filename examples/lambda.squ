@@ -1,3 +1,11 @@
-# Note: lambda can not run now #
-a := (lambda x : x + 1)
-a(1)
+(
+    lambda x : 
+    if(x % 2 == 0)
+    {
+        print("This is a even number")
+    }
+    else
+    {
+        print("This is odd number")
+    }
+) <= 1 # Assign values to lambda's parameters #

@@ -4,30 +4,34 @@ Square is a powerful programming language.
 ### Features of Square
 * Simple Syntax
 * Highly Portable
-* ...(TODO)
 ## How to run
 ```
 $ cd src
 $ ./a.exe ../examples/helloworld.squ
 ```
-## Note: Square is under developing, some files maybe can not run yet.But you can check its syntax!
 ## Examples
-A program to print "Hello World" on the screen.
+A program to check whether it is an odd number:  
 ```
-#  Print "Hello World" on the screen #
-cat("Hello World!")
-# You can also use "print" #
-print("Hi")
+(
+    lambda x : 
+    if(x % 2 == 0)
+    {
+        print("This is a even number")
+    }
+    else
+    {
+        print("This is odd number")
+    }
+) <= 1
+# Assign 1 to lambda's parameters #
 ```
 Result:
 ```
-Hello World!
-Hi
+This is odd number
 ```
 ## Contribution
 Welcome to pull a request!
 ## License
-Copyroght (c) 2020 Stepfen Shawn
+Copyright (c) 2020 Stepfen Shawn
 ## The Author
 Square was designed and developed by [Stepfen Shawn](https://github.com/StepfenShawn) in 2020.  
-[Linkedin](https://www.linkedin.com/in/shawn-stepfen-94301b193/)  

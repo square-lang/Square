@@ -81,11 +81,13 @@ typedef struct{
   node_type type;
   node* args;
   node* body;
+  node* args_value;
 }node_lambda;
 
 typedef struct squ_lambda{
   node* body;
   node* args;
+  node* args_value;
 }squ_lambda;
 
 typedef struct {
@@ -117,7 +119,7 @@ extern node* node_let_new(node*, node*);
 extern node* node_op_new(char*, node*, node*);
 extern node* node_block_new(node*, node*);
 extern node* node_call_new(node*, node*, node*, node*);
-extern node* node_lambda_new(node*, node*);
+extern node* node_lambda_new(node*, node*, node*);
 extern node* node_fdef_new(node*, node*, node*);
 extern node* node_double_new(squ_double);
 extern node* node_int_new(squ_int);

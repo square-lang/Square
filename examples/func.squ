@@ -1,6 +1,0 @@
-func output(s)
-{
-    print(s)
-}
-output("hello world")
-output(5);

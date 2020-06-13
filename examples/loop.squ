@@ -1,19 +1,7 @@
-times := 10
+# print number from 1 to 100 #
+i := 0
 loop
 {
-    print("hello world")
-    times := times - 1
-}when(times is not 0)
-
-# Result
-hello world
-hello world
-hello world
-hello world
-hello world
-hello world
-hello world
-hello world
-hello world
-hello world
-#
+    print(i)
+    i := i + 1
+}when(i <= 100)

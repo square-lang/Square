@@ -1058,9 +1058,13 @@ primary         : primary0
                     }
                 ;
 
-lambda_stmt     : op_lp keyword_lambda opt_args op_colon stmt_seq op_rp
+lambda_stmt     : op_lp keyword_lambda opt_args op_colon stmt_seq op_rp 
                     {
-                      $$ = node_lambda_new($3,$5);
+                      $$ = node_lambda_new($3,$5,NULL);
+                    }
+                | op_lp keyword_lambda opt_args op_colon stmt_seq op_rp op_le primary0 
+                    {
+                      $$ = node_lambda_new($3,$5,$8);
                     }
                 ;
 
@@ -1142,5 +1146,6 @@ terms           : term
 term            : ' ' 
                 | ';'
                 | '\n'
+                | op_and
                 ;
 %%
