@@ -1,10 +1,4 @@
-#  Print "Hello World" on the screen #
+# Print "Hello World" on the screen #
 cat("Hello World!")
 # You can also use "print" #
 print("Hi")
-# define a function to Print "Hello World" #
-func output(s)
-{
-    print(s)
-}
-output("Hello World")

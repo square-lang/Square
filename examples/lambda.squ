@@ -1,11 +1,9 @@
 (
-    lambda x : 
-    if(x % 2 == 0)
-    {
+    lambda x ->
+    if x % 2 == 0 -> {
         print("This is a even number")
     }
-    else
-    {
+    else -> {
         print("This is odd number")
     }
 ) <= 1 # Assign values to lambda's parameters #

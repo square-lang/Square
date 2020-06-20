@@ -104,7 +104,7 @@ extern int yydebug;
 typedef union YYSTYPE
 {
 /* Line 2058 of yacc.c  */
-#line 533 "parse.y"
+#line 548 "parse.y"
 
   node* nd;
   squ_string id;

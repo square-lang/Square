@@ -10,24 +10,31 @@ $ cd src
 $ ./a.exe ../examples/helloworld.squ
 ```
 ## Examples
-A program to check whether it is an odd number:  
+A program to check whether it is an even number:  
 ```
-(
-    lambda x : 
-    if(x % 2 == 0)
-    {
-        print("This is a even number")
-    }
-    else
-    {
-        print("This is odd number")
-    }
-) <= 1
-# Assign 1 to lambda's parameters #
+a := 10
+# You can replace "==" with "is" #
+if a % 2 is 0 -> {
+    print("This is a even number")
+}
+
+else -> {
+    print("This is a odd number")
+}
 ```
 Result:
 ```
-This is odd number
+This is even number
+```  
+A program to print 1~100 on the screen
+```
+# print number from 1 to 100 #
+i := 1
+loop when i <= 100 -> {
+    print(i)
+    # TODO: use inc(i) #
+    i := i + 1
+}
 ```
 ## Contribution
 Welcome to pull a request!

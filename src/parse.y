@@ -85,6 +85,7 @@ typedef enum
   INGREATER,   /* > or >= */
   INAND,       /* & or && */
   INOR,        /* | or || */
+  INSUB,       /* - or -> */
   FINISH,      /* end */
 }StateType;
 
@@ -317,6 +318,10 @@ TokenType getToken(YYSTYPE* yylval,parser_state* p){
         {
           state = INOR;
         }
+        else if(c == '-')
+        {
+          state = INSUB;
+        }
         else
         {
           state = FINISH;
@@ -324,9 +329,6 @@ TokenType getToken(YYSTYPE* yylval,parser_state* p){
           {
             case '+':
               result = op_add;
-            break;
-            case '-':
-              result = op_sub;
             break;
             case '*':
               result = op_mul;
@@ -431,12 +433,25 @@ TokenType getToken(YYSTYPE* yylval,parser_state* p){
       case INEQ:
         if(c == '=')
         {
-          state = FINISH;
           result = op_eq;
         }
         else
         {
           result = op_assign;
+        }
+        state = FINISH;
+      break;
+      case INSUB:
+        {
+          if(c == '>')
+          {
+            state = FINISH;
+            result = op_next;
+          }
+          else
+          {
+            result = op_sub;
+          }
         }
       break;
       case INNEQ:
@@ -702,14 +717,6 @@ stmt            : var op_assign expr
                     {
                       $$ = node_import_new($2);
                     }
-                | stmt op_next stmt op_next stmt
-                  {
-
-                  }
-                | keyword_class identifier opt_block
-                  {
-
-                  }
                 | keyword_break
                     {
                       $$ = node_break_new();
@@ -915,9 +922,9 @@ opt_elsif       : /* none */
                     {
                       $$ = NULL;
                     }
-                | opt_elsif keyword_else keyword_if op_lp condition op_rp op_flp stmt_seq op_frp
+                | opt_elsif keyword_else keyword_if condition op_next op_flp stmt_seq op_frp
                     {
-                      $$ = node_if_new($5, $8, NULL);
+                      $$ = node_if_new($4, $7, NULL);
                     }
                 ;
 
@@ -925,9 +932,9 @@ opt_else        : opt_elsif
                     {
                       $$ = NULL;
                     }
-                | opt_elsif keyword_else op_flp stmt_seq op_frp
+                | opt_elsif keyword_else op_next op_flp stmt_seq op_frp
                     {
-                      $$ = $4;
+                      $$ = $5;
                     }
                 ;
 
@@ -983,9 +990,9 @@ primary0        : lit_number
                     {
                       $$ = node_map_of(NULL);
                     }
-                | keyword_if op_lp condition op_rp op_flp stmt_seq op_frp opt_else
+                | keyword_if condition op_next op_flp stmt_seq op_frp opt_else
                     {
-                      $$ = node_if_new($3, $6, $8);
+                      $$ = node_if_new($2, $5, $7);
                     }
                 | keyword_when op_lp condition op_rp op_flp stmt_seq op_frp
                     {
@@ -1017,10 +1024,6 @@ cond            : primary0
                     {
                       $$ = node_call_new(NULL, node_ident_new($3), $5, NULL);
                     }
-                | cond '.' identifier
-                    {
-                      $$ = node_call_new($1, node_ident_new($3), NULL, NULL);
-                    }
                 ;
 
 primary         : primary0
@@ -1036,13 +1039,13 @@ primary         : primary0
                     {
                       $$ = node_call_new(NULL, node_ident_new($1), $3, NULL);
                     }
-                | keyword_loop op_flp stmt_seq op_frp keyword_when op_lp condition op_rp
+                | keyword_loop keyword_when condition op_next op_flp stmt_seq op_frp 
                     {
-                      $$ = node_loop_new($3, $7);
+                      $$ = node_loop_new($6, $3);
                     }
-                | keyword_func identifier op_lp opt_args op_rp op_flp stmt_seq op_frp
+                | keyword_func identifier op_lp opt_args op_rp op_next op_flp stmt_seq op_frp
                     {
-                      $$ = node_fdef_new(node_ident_new($2), $4, $7);
+                      $$ = node_fdef_new(node_ident_new($2), $4, $8);
                     }
                 | primary '.' identifier op_lp opt_args op_rp opt_block
                     {
@@ -1058,11 +1061,11 @@ primary         : primary0
                     }
                 ;
 
-lambda_stmt     : op_lp keyword_lambda opt_args op_colon stmt_seq op_rp 
+lambda_stmt     : op_lp keyword_lambda opt_args op_next stmt_seq op_rp 
                     {
                       $$ = node_lambda_new($3,$5,NULL);
                     }
-                | op_lp keyword_lambda opt_args op_colon stmt_seq op_rp op_le primary0 
+                | op_lp keyword_lambda opt_args op_next stmt_seq op_rp op_le primary0 
                     {
                       $$ = node_lambda_new($3,$5,$8);
                     }

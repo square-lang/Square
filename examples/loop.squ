@@ -1,7 +1,7 @@
 # print number from 1 to 100 #
-i := 0
-loop
-{
+i := 1
+loop when i <= 100 -> {
     print(i)
+    # TODO: use inc(i) #
     i := i + 1
-}when(i <= 100)
+}

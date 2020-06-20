@@ -585,6 +585,7 @@ node_expr(squ_ctx* ctx, node* np)
       squ_raise(ctx, "invalid operator");
     }
     break;
+
   case NODE_CALL:
     {
       node_call* ncall = np->value.v.p;
@@ -624,6 +625,7 @@ node_expr(squ_ctx* ctx, node* np)
       } 
     }
     break;
+
   case NODE_LAMBDA:
     {
       node_lambda* nlambda = np->value.v.p;
@@ -658,6 +660,7 @@ node_expr(squ_ctx* ctx, node* np)
       }
     }
     break;
+
   case NODE_FDEF:
     {
       lambda = malloc(sizeof(squ_lambda));
@@ -819,12 +822,14 @@ squ_run(parser_state* p)
   squ_fun_def(p,"cat",squ_puts);
   squ_fun_def(p,"print",squ_puts);
   node_expr_stmt(&p->ctx, (node*)p->lval);
+  
   if(lambda != NULL)
   {
     free(lambda->args);
     free(lambda->body);
     free(lambda);
   }
+
   if (p->ctx.exc != NULL) 
   {
     squ_array* arr = squ_array_new();
