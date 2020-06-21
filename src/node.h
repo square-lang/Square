@@ -113,8 +113,6 @@ extern node* node_array_of(node*);
 extern void node_array_add(node*, node*);
 extern void node_array_free(node*);
 extern node* node_pair_new(node*, node*);
-extern node* node_map_new();
-extern node* node_map_of(node*);
 extern node* node_let_new(node*, node*);
 extern node* node_op_new(char*, node*, node*);
 extern node* node_block_new(node*, node*);

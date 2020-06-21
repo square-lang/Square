@@ -23,7 +23,6 @@ typedef enum{
   SQU_VALUE_BOOL,          /* bool */
   SQU_VALUE_INT,           /* int */
   SQU_VALUE_ARRAY,         /* array */
-  SQU_VALUE_MAP,           /* map */
   SQU_VALUE_PTR,           /* point */
   SQU_VALUE_STRING,        /* string */
   SQU_VALUE_DOUBLE,        /* double */

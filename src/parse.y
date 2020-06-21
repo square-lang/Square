@@ -91,7 +91,7 @@ typedef enum
 
 #define MAXTOKENLEN 80
 #define MAXFUNCNAME 50
-#define MAXRESERVED 17
+#define MAXRESERVED 19
 
 /* lexeme of identifier or reserved word */
 char tokenString[MAXTOKENLEN+1];
@@ -208,12 +208,14 @@ static struct
       {"goto",keyword_goto},
       {"block",keyword_block},
       {"func",keyword_func},
-      {"class",keyword_class},
+      {"obj",keyword_obj},
       {"loop",keyword_loop},
       {"when",keyword_when},
       {"is",keyword_is},
       {"not",keyword_not},
-      {"lambda",keyword_lambda}
+      {"lambda",keyword_lambda},
+      {"method",keyword_method},
+      {"self",keyword_self}
     };
 
 /* look for existing keyword*/
@@ -354,9 +356,6 @@ TokenType getToken(YYSTYPE* yylval,parser_state* p){
             case ',':
               result = op_comma;
             break;
-            case ':':
-              result = op_colon;
-            break;
           }
         }
       break;
@@ -383,7 +382,7 @@ TokenType getToken(YYSTYPE* yylval,parser_state* p){
           ungetNextChar();
           save = FALSE;
         }
-        if(c == ' ')
+        if(c == ':')
         {
           result = op_colon;
         }
@@ -571,9 +570,7 @@ yylex(YYSTYPE *yylval,parser_state* p)
       opt_args 
       opt_block 
       f_args 
-      map 
       var
-      map_args 
       bparam
 
 %type <nd> 
@@ -612,12 +609,14 @@ static void yywarnning(parser_state* p,const char* s);
         keyword_goto
         keyword_block
         keyword_func
-        keyword_class
+        keyword_obj
         keyword_loop
         keyword_when
         keyword_is
         keyword_not
         keyword_lambda
+        keyword_method
+        keyword_self
 
 %token
         op_add
@@ -717,6 +716,8 @@ stmt            : var op_assign expr
                     {
                       $$ = node_import_new($2);
                     }
+                | keyword_obj identifier op_next op_flp opt_obj op_frp
+                | keyword_method identifier op_colon identifier op_lp opt_args op_rp op_next op_flp stmt_seq op_frp
                 | keyword_break
                     {
                       $$ = node_break_new();
@@ -732,6 +733,10 @@ var             : identifier
                     {
                         $$ = node_ident_new($1);
                     }
+                ;
+
+opt_obj         : /* none */
+                | keyword_self op_next identifier opt_terms opt_obj
                 ;
 
 expr            : expr op_add expr
@@ -982,14 +987,6 @@ primary0        : lit_number
                     {
                       $$ = node_array_of(NULL);
                     }
-                | '[' map_args ']'
-                    {
-                      $$ = node_map_of($2);
-                    }
-                | '[' ':' ']'
-                    {
-                      $$ = node_map_of(NULL);
-                    }
                 | keyword_if condition op_next op_flp stmt_seq op_frp opt_else
                     {
                       $$ = node_if_new($2, $5, $7);
@@ -1068,28 +1065,6 @@ lambda_stmt     : op_lp keyword_lambda opt_args op_next stmt_seq op_rp
                 | op_lp keyword_lambda opt_args op_next stmt_seq op_rp op_le primary0 
                     {
                       $$ = node_lambda_new($3,$5,$8);
-                    }
-                ;
-
-map             : lit_string ':' expr
-                    {
-                      $$ = node_pair_new($<nd>1, $3);
-                    }
-                | identifier ':' expr
-                    {
-                      $$ = node_pair_new(node_ident_new($1), $3);
-                    }
-                ;
-
-map_args        : map
-                    {
-                      $$ = node_map_new();
-                      node_array_add($$, $1);
-                    }
-                | map_args op_comma map
-                    {
-                      $$ = $1;
-                      node_array_add($$, $3);
                     }
                 ;
 

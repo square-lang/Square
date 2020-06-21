@@ -117,47 +117,6 @@ node_pair_new(node* key, node* value)
 }
 
 node*
-node_map_new()
-{
-  node_array* arr = malloc(sizeof(node_array));
-  /* TODO: error check */
-  arr->len = 0;
-  arr->max = 0;
-  arr->data = NULL;
-
-  node* np = malloc(sizeof(node));
-  np->type = NODE_VALUE;
-  np->value.t = SQU_VALUE_MAP;
-  np->value.v.p = arr;
-  return np;
-}
-
-node*
-node_map_of(node* np)
-{
-  if (np == NULL)
-    np = node_map_new();
-  return np;
-}
-
-void
-node_map_free(node* np)
-{
-  int i;
-  node_array* arr = np->value.v.p;
-  for (i = 0; i < arr->len; i++) {
-    node* pair = arr->data[i];
-    node_pair* npair = pair->value.v.p;
-    node_free(npair->key);
-    node_free(npair->value);
-    free(npair);
-    free(pair);
-  }
-  free(arr);
-  free(np);
-}
-
-node*
 node_let_new(node* lhs, node* rhs)
 {
   node_let* nlet = malloc(sizeof(node_let));

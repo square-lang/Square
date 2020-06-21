@@ -57,45 +57,47 @@ extern int yydebug;
      keyword_goto = 266,
      keyword_block = 267,
      keyword_func = 268,
-     keyword_class = 269,
+     keyword_obj = 269,
      keyword_loop = 270,
      keyword_when = 271,
      keyword_is = 272,
      keyword_not = 273,
      keyword_lambda = 274,
-     op_add = 275,
-     op_sub = 276,
-     op_mul = 277,
-     op_div = 278,
-     op_mod = 279,
-     op_eq = 280,
-     op_neq = 281,
-     op_lt = 282,
-     op_le = 283,
-     op_gt = 284,
-     op_ge = 285,
-     op_and = 286,
-     op_or = 287,
-     op_bar = 288,
-     op_amper = 289,
-     op_next = 290,
-     op_assign = 291,
-     op_lp = 292,
-     op_rp = 293,
-     op_flp = 294,
-     op_frp = 295,
-     op_comma = 296,
-     op_colon = 297,
-     ENDFILE = 298,
-     ERROR = 299,
-     lit_number = 300,
-     lit_string = 301,
-     lit_true = 302,
-     lit_false = 303,
-     lit_null = 304,
-     identifier = 305,
-     op_LOWEST = 306,
-     op_HIGHEST = 307
+     keyword_method = 275,
+     keyword_self = 276,
+     op_add = 277,
+     op_sub = 278,
+     op_mul = 279,
+     op_div = 280,
+     op_mod = 281,
+     op_eq = 282,
+     op_neq = 283,
+     op_lt = 284,
+     op_le = 285,
+     op_gt = 286,
+     op_ge = 287,
+     op_and = 288,
+     op_or = 289,
+     op_bar = 290,
+     op_amper = 291,
+     op_next = 292,
+     op_assign = 293,
+     op_lp = 294,
+     op_rp = 295,
+     op_flp = 296,
+     op_frp = 297,
+     op_comma = 298,
+     op_colon = 299,
+     ENDFILE = 300,
+     ERROR = 301,
+     lit_number = 302,
+     lit_string = 303,
+     lit_true = 304,
+     lit_false = 305,
+     lit_null = 306,
+     identifier = 307,
+     op_LOWEST = 308,
+     op_HIGHEST = 309
    };
 #endif
 
@@ -104,14 +106,14 @@ extern int yydebug;
 typedef union YYSTYPE
 {
 /* Line 2058 of yacc.c  */
-#line 548 "parse.y"
+#line 547 "parse.y"
 
   node* nd;
   squ_string id;
 
 
 /* Line 2058 of yacc.c  */
-#line 115 "parse.tab.h"
+#line 117 "parse.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

@@ -4,6 +4,8 @@ Square is a powerful programming language.
 ### Features of Square
 * Simple Syntax
 * Highly Portable
+* Easy to learn
+* Small
 ## How to run
 ```
 $ cd src
