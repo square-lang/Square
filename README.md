@@ -26,7 +26,7 @@ else -> {
 ```
 Result:
 ```
-This is even number
+This is a even number
 ```  
 A program to print 1~100 on the screen
 ```

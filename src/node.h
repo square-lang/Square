@@ -2,6 +2,9 @@
 #define _NODE_H_
 #include "square.h"
 
+#define RUN_OK TRUE
+#define RUN_NG FALSE
+
 typedef enum {
   NODE_ARGS,
   NODE_PAIR,
