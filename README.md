@@ -32,7 +32,7 @@ A program to print 1~100 on the screen
 ```
 # print number from 1 to 100 #
 i := 1
-loop when i <= 100 -> {
+loop when i <= 100 {
     print(i)
     # TODO: use inc(i) #
     i := i + 1

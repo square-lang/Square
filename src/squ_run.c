@@ -1,7 +1,25 @@
-#include "squ_run.h"
+#include "node.h"
 
 #include <assert.h>
 #include <stdio.h>
+
+squ_value* node_expr(squ_ctx*, node*);
+
+squ_value*
+node_expr_stmt(squ_ctx* ctx, node* np)
+{
+  int i;
+  node_array* arr = np->value.v.p;
+  squ_value* v = NULL;
+  for (i = 0; i < arr->len; i++) {
+    if (ctx->exc != NULL) {
+      return NULL;
+    }
+    
+    v = node_expr(ctx, arr->data[i]);
+  }
+  return v;
+}
 
 void 
 squ_fun_def(parser_state* p,squ_string func_name, void* func_p)
@@ -59,15 +77,57 @@ node_expr(squ_ctx* ctx, node* np)
   {
   case NODE_IF:
     {
-      CHECK_CTX;
-      node_if_run(ctx, np->value.v.p);
+      node_if* nif = np->value.v.p;
+      squ_value* v = node_expr(ctx, nif->cond);
+      if (ctx->exc != NULL)
+      {
+        return NULL;
+      }
+      if (v->t == SQU_VALUE_BOOL && v->v.b) 
+      {
+        node_expr_stmt(ctx, nif->stmt_seq);
+      }
+      else if (nif->opt_else != NULL)
+      {
+        node_expr_stmt(ctx, nif->opt_else);
+      }
     }
     break;
 
   case NODE_LOOP:
     {
-      CHECK_CTX;
-      node_loop_run(ctx, np->value.v.p);
+      node_loop* nloop = np->value.v.p;
+      squ_value* v = node_expr(ctx, nloop->cond);
+      if (ctx->exc != NULL)
+      {
+        return NULL;
+      }
+      if(v->t == SQU_VALUE_BOOL)
+      {
+        while(v->v.b = TRUE)
+        {
+          node_expr_stmt(ctx, nloop->stmt_seq);
+          v = node_expr(ctx, nloop->cond);
+          
+          if(v->t == SQU_VALUE_BOOL)
+          {
+            if(v->v.b == FALSE)
+            {
+              break;
+            }
+            else
+            {
+              continue;
+            }
+          }
+          else
+          {
+            squ_raise(ctx,"The condtion should be bool");
+            break;
+          }
+          
+        }
+      }
     }
     break;
 
@@ -670,7 +730,7 @@ node_expr(squ_ctx* ctx, node* np)
   case NODE_IDENT:
   {
     /* TODO: return the identifier's value */
-    return &np->value; 
+    return &np->value;
     break;
   }
   default:

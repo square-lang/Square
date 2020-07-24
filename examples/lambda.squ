@@ -1,3 +1,4 @@
+x := 1
 (
     lambda x ->
     if x % 2 == 0 -> {
@@ -6,4 +7,4 @@
     else -> {
         print("This is odd number")
     }
-) <= 1 # Assign values to lambda's parameters #
+) <= x # Assign values to lambda's parameters #
