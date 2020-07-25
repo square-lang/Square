@@ -72,6 +72,7 @@ typedef struct {
   squ_error* exc;
 } squ_ctx;
 
+
 typedef struct parser_state {
   size_t nerr;
   void* lval;
@@ -91,8 +92,8 @@ int squ_parse_string(parser_state*, const char*);
 int squ_run(parser_state*);
 void squ_raise(squ_ctx*, const char*);
 
-squ_value* squ_var_get(squ_ctx* ctx, squ_string name);
-void squ_var_def(squ_ctx* ctx,squ_string var_name,squ_value* v);
-squ_value* squ_var_get(squ_ctx* ctx, squ_string name);
+void squ_var_def(squ_ctx* ctx, squ_string var_name,squ_value* v);
+squ_value* var_get(squ_ctx*, squ_string name);
+static int squ_var_get(squ_ctx* ctx, squ_string name, squ_value*);
 
 #endif

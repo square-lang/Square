@@ -702,11 +702,7 @@ stmts           :
                     }
                 ;
 
-stmt            : var op_assign expr
-                    {
-                      $$ = node_let_new($1, $3);
-                    }
-                | keyword_return opt_args
+stmt            : keyword_return opt_args
                     {
                       $$ = node_return_new($2);
                     }
@@ -714,8 +710,6 @@ stmt            : var op_assign expr
                     {
                       $$ = node_import_new($2);
                     }
-                | keyword_obj identifier op_next op_flp opt_obj op_frp
-                | keyword_method identifier op_colon identifier op_lp opt_args op_rp op_next op_flp stmt_seq op_frp
                 | keyword_break
                     {
                       $$ = node_break_new();
@@ -731,10 +725,6 @@ var             : identifier
                     {
                         $$ = node_ident_new($1);
                     }
-                ;
-
-opt_obj         : /* none */
-                | keyword_self op_next identifier opt_terms opt_obj
                 ;
 
 expr            : expr op_add expr
@@ -829,6 +819,10 @@ expr            : expr op_add expr
                     {
                       $$ = $1;
                     }
+                | var op_assign expr
+                  {
+                    $$ = node_let_new($1, $3);
+                  }
                 ;
 
 condition       : condition op_add condition

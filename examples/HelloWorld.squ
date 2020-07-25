@@ -2,5 +2,5 @@
 cat("Hello World!")
 # You can also use "print" #
 print("Hi")
-s := "Hello World"
-print(s)
+# s := "Hello World" #
+# print(s) #

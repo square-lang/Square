@@ -153,7 +153,7 @@ main(int argc, const char** argv)
 
   squ_parse_init(&state);
 
-  if (argc == 1) {              /* no args */
+  if (argc <= 1) {              /* no args */
     n = squ_parse_input(&state, stdin, "stdin");
   }
   else 

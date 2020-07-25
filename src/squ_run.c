@@ -48,11 +48,21 @@ squ_var_def(squ_ctx* ctx,squ_string var_name,squ_value* v)
 }
 
 squ_value*
-squ_var_get(squ_ctx* ctx, squ_string name)
+var_get(squ_ctx* ctx, squ_string name)
 {
   khint_t k = kh_get(value, ctx->env, name);
   squ_value* v = kh_value(ctx->env, k);
   return v;
+}
+
+static int
+squ_var_get(squ_ctx* ctx, squ_string name, squ_value* v)
+{
+  if(v == var_get(ctx, name))
+  {
+    return RUN_OK;
+  }
+  return RUN_NG;
 }
 
 void
@@ -60,6 +70,194 @@ squ_var_reset(squ_ctx* ctx, squ_string name, squ_value* v)
 {
   khint_t k = kh_get(value, ctx->env, name);
   kh_value(ctx->env,k) = v;
+}
+
+static int
+squ_add(squ_ctx* ctx, squ_array* args, squ_value* ret)
+{
+  assert(args->len == 2);
+
+  squ_value* v1 = args->data[0];
+  squ_value* v2 = args->data[1];
+
+  if(v1->t == SQU_VALUE_INT && v2->t == SQU_VALUE_INT)
+  {
+    ret->v.i = v1->v.i + v2->v.i;
+    return RUN_OK;
+  }
+
+  if(v1->t == SQU_VALUE_DOUBLE)
+  {
+    switch(v2->t)
+    {
+    case SQU_VALUE_DOUBLE:
+      ret->v.d = v1->v.d + v2->v.d;
+      return RUN_OK;
+      break;
+    
+    case SQU_VALUE_INT:
+      ret->v.d = v1->v.d + (double)v2->v.i;
+      return RUN_OK;
+      break;
+
+    default:
+      break;
+    }
+  }
+  return RUN_NG;
+}
+
+static int
+squ_sub(squ_ctx* ctx, squ_array* args, squ_value* ret)
+{
+  assert(args->len == 2);
+
+  squ_value* v1 = args->data[0];
+  squ_value* v2 = args->data[1];
+
+  if(v1->t == SQU_VALUE_INT && v2->t == SQU_VALUE_INT)
+  {
+    ret->v.i = v1->v.i - v2->v.i;
+     return RUN_OK;
+  }
+
+  if(v1->t == SQU_VALUE_DOUBLE)
+  {
+    switch(v2->t)
+    {
+    case SQU_VALUE_DOUBLE:
+      ret->v.d = v1->v.d - v2->v.d;
+      return RUN_OK;
+      break;
+    
+    case SQU_VALUE_INT:
+      ret->v.d = v1->v.d - (double)v2->v.i;
+      return RUN_OK;
+      break;
+
+    default:
+      break;
+    }
+  }
+  return RUN_NG;
+}
+
+static int
+squ_mul(squ_ctx* ctx, squ_array* args, squ_value* ret)
+{
+  assert(args->len == 2);
+
+  squ_value* v1 = args->data[0];
+  squ_value* v2 = args->data[1];
+
+  if(v1->t == SQU_VALUE_INT && v2->t == SQU_VALUE_INT)
+  {
+    ret->v.i = v1->v.i * v2->v.i;
+    return RUN_OK; 
+  }
+
+  if(v1->t == SQU_VALUE_DOUBLE)
+  {
+    switch(v2->t)
+    {
+    case SQU_VALUE_DOUBLE:
+      ret->v.d = v1->v.d * v2->v.d;
+      return RUN_OK;
+      break;
+    
+    case SQU_VALUE_INT:
+      ret->v.d = v1->v.d * (double)v2->v.i;
+      return RUN_OK;
+      break;
+
+    default:
+      break;
+    }
+  }
+  return RUN_NG;
+}
+
+static int
+squ_div(squ_ctx* ctx, squ_array* args, squ_value* ret)
+{
+  assert(args->len == 2);
+
+  squ_value* v1 = args->data[0];
+  squ_value* v2 = args->data[1];
+
+  if(v1->t == SQU_VALUE_INT && v2->t == SQU_VALUE_INT)
+  {
+    ret->v.i = v1->v.i / v2->v.i;
+    return RUN_OK; 
+  }
+
+  if(v1->t == SQU_VALUE_DOUBLE)
+  {
+    switch(v2->t)
+    {
+    case SQU_VALUE_DOUBLE:
+      ret->v.d = v1->v.d / v2->v.d;
+      return RUN_OK;
+      break;
+    
+    case SQU_VALUE_INT:
+      ret->v.d = v1->v.d / (double)v2->v.i;
+      return RUN_OK;
+      break;
+
+    default:
+      break;
+    }
+  }
+  return RUN_NG;
+}
+
+static int
+squ_mod(squ_ctx* ctx, squ_array* args, squ_value* ret)
+{
+  assert(args->len == 2);
+
+  squ_value* v1 = args->data[0];
+  squ_value* v2 = args->data[1];
+
+  assert(v1->t == SQU_VALUE_INT);
+  assert(v2->t == SQU_VALUE_INT);
+
+  ret->v.i = v1->v.i % v2->v.i;
+
+  return RUN_OK; 
+}
+
+static int
+squ_gt(squ_ctx* ctx, squ_array* args, squ_value* ret)
+{
+  assert(args->len == 2);
+
+  squ_value* v1 = args->data[0];
+  squ_value* v2 = args->data[1];
+
+  return RUN_OK; 
+}
+
+static int
+squ_call(squ_ctx* ctx, squ_string name, squ_array* args, squ_value* ret)
+{
+  squ_value* v;
+  int n = squ_var_get(ctx, name, v);
+  if(!n)
+  {
+    switch (v->t)
+    {
+    case SQU_VALUE_CFUNC:
+      return ((squ_cfunc)v->v.p)(ctx, args);
+      break;
+    
+    default:
+      break;
+    }
+  }
+  squ_raise(ctx, "function not found!");
+  return RUN_NG;
 }
 
 squ_value*
@@ -172,7 +370,7 @@ node_expr(squ_ctx* ctx, node* np)
           {
           case SQU_VALUE_INT:
             {
-              squ_value* v = squ_var_get(ctx,lhs->v.id);
+              squ_value* v = var_get(ctx,lhs->v.id);
               v->t = SQU_VALUE_INT;
               v->v.i = v->v.i + rhs->v.i;
               return v;
@@ -180,7 +378,7 @@ node_expr(squ_ctx* ctx, node* np)
             }
           case SQU_VALUE_DOUBLE:
             {
-              squ_value* v = squ_var_get(ctx,lhs->v.id);
+              squ_value* v = var_get(ctx,lhs->v.id);
               v->t = SQU_VALUE_DOUBLE;
               v->v.d = v->v.d + rhs->v.d;
               return v;
@@ -215,7 +413,7 @@ node_expr(squ_ctx* ctx, node* np)
           {
           case SQU_VALUE_INT:
             {
-              squ_value* v = squ_var_get(ctx,lhs->v.id);
+              squ_value* v = var_get(ctx,lhs->v.id);
               v->t = SQU_VALUE_INT;
               v->v.i = v->v.i - rhs->v.i;
               return v;
@@ -223,7 +421,7 @@ node_expr(squ_ctx* ctx, node* np)
             }
           case SQU_VALUE_DOUBLE:
             {
-              squ_value* v = squ_var_get(ctx,lhs->v.id);
+              squ_value* v = var_get(ctx,lhs->v.id);
               v->t = SQU_VALUE_DOUBLE;
               v->v.d = v->v.d - rhs->v.d;
               return v;
@@ -259,7 +457,7 @@ node_expr(squ_ctx* ctx, node* np)
           {
           case SQU_VALUE_INT:
             {
-              squ_value* v = squ_var_get(ctx,lhs->v.id);
+              squ_value* v = var_get(ctx,lhs->v.id);
               v->t = SQU_VALUE_INT;
               v->v.i = v->v.i * rhs->v.i;
               return v;
@@ -267,7 +465,7 @@ node_expr(squ_ctx* ctx, node* np)
             }
           case SQU_VALUE_DOUBLE:
             {
-              squ_value* v = squ_var_get(ctx,lhs->v.id);
+              squ_value* v = var_get(ctx,lhs->v.id);
               v->t = SQU_VALUE_DOUBLE;
               v->v.d = v->v.d * rhs->v.d;
               return v;
@@ -304,7 +502,7 @@ node_expr(squ_ctx* ctx, node* np)
           {
           case SQU_VALUE_INT:
             {
-              squ_value* v = squ_var_get(ctx,lhs->v.id);
+              squ_value* v = var_get(ctx,lhs->v.id);
               v->t = SQU_VALUE_INT;
               v->v.i = v->v.i / rhs->v.i;
               return v;
@@ -312,7 +510,7 @@ node_expr(squ_ctx* ctx, node* np)
             }
           case SQU_VALUE_DOUBLE:
             {
-              squ_value* v = squ_var_get(ctx,lhs->v.id);
+              squ_value* v = var_get(ctx,lhs->v.id);
               v->t = SQU_VALUE_DOUBLE;
               v->v.d = v->v.d / rhs->v.d;
               return v;
@@ -337,7 +535,7 @@ node_expr(squ_ctx* ctx, node* np)
         }
         if (lhs->t == SQU_VALUE_IDENT && rhs->t == SQU_VALUE_INT)
         {
-          squ_value* v = squ_var_get(ctx,lhs->v.id);
+          squ_value* v = var_get(ctx,lhs->v.id);
           v->t = SQU_VALUE_INT;
           v->v.i = v->v.i % rhs->v.i;
           return v;
@@ -376,7 +574,7 @@ node_expr(squ_ctx* ctx, node* np)
           {
           case SQU_VALUE_INT:
           {
-            squ_value* v = squ_var_get(ctx,lhs->v.id);
+            squ_value* v = var_get(ctx,lhs->v.id);
             squ_value* new = malloc(sizeof(squ_value));
             new->t = SQU_VALUE_BOOL;
             if(*(nop->op+1) == '=')
@@ -392,7 +590,7 @@ node_expr(squ_ctx* ctx, node* np)
           }
           case SQU_VALUE_DOUBLE:
            {
-            squ_value* v = squ_var_get(ctx,lhs->v.id);
+            squ_value* v = var_get(ctx,lhs->v.id);
             squ_value* new = malloc(sizeof(squ_value));
             new->t = SQU_VALUE_BOOL;
             if(*(nop->op+1) == '=')
@@ -446,7 +644,7 @@ node_expr(squ_ctx* ctx, node* np)
           {
           case SQU_VALUE_INT:
           {
-            squ_value* v = squ_var_get(ctx,lhs->v.id);
+            squ_value* v = var_get(ctx,lhs->v.id);
             squ_value* new = malloc(sizeof(squ_value));
             new->t = SQU_VALUE_BOOL;
             if(*(nop->op+1) == '=')
@@ -462,7 +660,7 @@ node_expr(squ_ctx* ctx, node* np)
           }
           case SQU_VALUE_DOUBLE:
            {
-            squ_value* v = squ_var_get(ctx,lhs->v.id);
+            squ_value* v = var_get(ctx,lhs->v.id);
             squ_value* new = malloc(sizeof(squ_value));
             new->t = SQU_VALUE_BOOL;
             if(*(nop->op+1) == '=')
@@ -511,7 +709,7 @@ node_expr(squ_ctx* ctx, node* np)
           case SQU_VALUE_INT:
           {
             squ_value* new = malloc(sizeof(squ_value));
-            squ_value* v = squ_var_get(ctx,lhs->v.id);
+            squ_value* v = var_get(ctx,lhs->v.id);
             new->t = SQU_VALUE_BOOL;
             new->v.b = v->v.i == rhs->v.i;
             return new;
@@ -520,7 +718,7 @@ node_expr(squ_ctx* ctx, node* np)
           case SQU_VALUE_DOUBLE:
            {
             squ_value* new = malloc(sizeof(squ_value));
-            squ_value* v = squ_var_get(ctx,lhs->v.id);
+            squ_value* v = var_get(ctx,lhs->v.id);
             new->t = SQU_VALUE_BOOL;
             new->v.b = v->v.d == rhs->v.d;
             return new;
@@ -560,7 +758,7 @@ node_expr(squ_ctx* ctx, node* np)
           case SQU_VALUE_INT:
           {
             squ_value* new = malloc(sizeof(squ_value));
-            squ_value* v = squ_var_get(ctx,lhs->v.id);
+            squ_value* v = var_get(ctx,lhs->v.id);
             new->t = SQU_VALUE_BOOL;
             new->v.b = v->v.i != rhs->v.i;
             return new;
@@ -569,7 +767,7 @@ node_expr(squ_ctx* ctx, node* np)
           case SQU_VALUE_DOUBLE:
            {
             squ_value* new = malloc(sizeof(squ_value));
-            squ_value* v = squ_var_get(ctx,lhs->v.id);
+            squ_value* v = var_get(ctx,lhs->v.id);
             new->t = SQU_VALUE_BOOL;
             new->v.b = v->v.d != rhs->v.d;
             return new;
@@ -714,7 +912,7 @@ node_expr(squ_ctx* ctx, node* np)
       {
         if(v_r->t == SQU_VALUE_IDENT)
         {
-          squ_var_def(ctx,v_l->v.id,squ_var_get(ctx,v_r->v.id));
+          squ_var_def(ctx,v_l->v.id, var_get(ctx,v_r->v.id));
         }
         else
         {
@@ -762,7 +960,7 @@ squ_cputs(squ_ctx* ctx, FILE* out, squ_array* args)
         break;
       case SQU_VALUE_IDENT:
         {
-          squ_value* v1 = squ_var_get(ctx,v->v.id);
+          squ_value* v1 = var_get(ctx,v->v.id);
           switch(v1->t)
           {
             case SQU_VALUE_INT:

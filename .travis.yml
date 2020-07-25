@@ -9,4 +9,5 @@ install:
 - sudo apt update
 
 script:
-- gcc src/parse.tab.c src/main.c src/node.c src/squ_io.c src/squ_run.c
+- cd src/
+- make
