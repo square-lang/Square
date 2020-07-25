@@ -9,7 +9,7 @@ Square is a powerful programming language.
 ## How to run
 ```
 $ cd src
-$ ./a.exe ../examples/helloworld.squ
+$ make
 ```
 ## Examples
 A program to check whether it is an even number:  
