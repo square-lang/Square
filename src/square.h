@@ -60,6 +60,7 @@ typedef struct {
 } squ_value;
 
 KHASH_MAP_INIT_STR(value, squ_value*)
+
 typedef khash_t(value) squ_env;
 
 typedef struct {
@@ -94,6 +95,11 @@ void squ_raise(squ_ctx*, const char*);
 
 void squ_var_def(squ_ctx* ctx, squ_string var_name,squ_value* v);
 squ_value* var_get(squ_ctx*, squ_string name);
-static int squ_var_get(squ_ctx* ctx, squ_string name, squ_value*);
+static int squ_var_get(squ_ctx* ctx, squ_string name,squ_value*);
+
+BOOL is_squ_int(squ_value* v1, squ_value* v2);
+BOOL is_squ_string(squ_value* v1, squ_value* v2);
+BOOL is_squ_double(squ_value* v1, squ_value* v2);
+BOOL is_squ_bool(squ_value* v1, squ_value* v2);
 
 #endif

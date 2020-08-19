@@ -1,6 +1,4 @@
-# Print "Hello World" on the screen #
-cat("Hello World!")
-# You can also use "print" #
-print("Hi")
-# s := "Hello World" #
-# print(s) #
+# Print Hello World on the screen #
+print "Hello World!"
+# You can also use print #
+print "Hi"

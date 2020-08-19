@@ -1,4 +1,6 @@
 #include "node.h"
+#include "vm_stack.h"
+#include "squ_vm.h"
 
 #include <assert.h>
 #include <stdio.h>
@@ -70,194 +72,6 @@ squ_var_reset(squ_ctx* ctx, squ_string name, squ_value* v)
 {
   khint_t k = kh_get(value, ctx->env, name);
   kh_value(ctx->env,k) = v;
-}
-
-static int
-squ_add(squ_ctx* ctx, squ_array* args, squ_value* ret)
-{
-  assert(args->len == 2);
-
-  squ_value* v1 = args->data[0];
-  squ_value* v2 = args->data[1];
-
-  if(v1->t == SQU_VALUE_INT && v2->t == SQU_VALUE_INT)
-  {
-    ret->v.i = v1->v.i + v2->v.i;
-    return RUN_OK;
-  }
-
-  if(v1->t == SQU_VALUE_DOUBLE)
-  {
-    switch(v2->t)
-    {
-    case SQU_VALUE_DOUBLE:
-      ret->v.d = v1->v.d + v2->v.d;
-      return RUN_OK;
-      break;
-    
-    case SQU_VALUE_INT:
-      ret->v.d = v1->v.d + (double)v2->v.i;
-      return RUN_OK;
-      break;
-
-    default:
-      break;
-    }
-  }
-  return RUN_NG;
-}
-
-static int
-squ_sub(squ_ctx* ctx, squ_array* args, squ_value* ret)
-{
-  assert(args->len == 2);
-
-  squ_value* v1 = args->data[0];
-  squ_value* v2 = args->data[1];
-
-  if(v1->t == SQU_VALUE_INT && v2->t == SQU_VALUE_INT)
-  {
-    ret->v.i = v1->v.i - v2->v.i;
-     return RUN_OK;
-  }
-
-  if(v1->t == SQU_VALUE_DOUBLE)
-  {
-    switch(v2->t)
-    {
-    case SQU_VALUE_DOUBLE:
-      ret->v.d = v1->v.d - v2->v.d;
-      return RUN_OK;
-      break;
-    
-    case SQU_VALUE_INT:
-      ret->v.d = v1->v.d - (double)v2->v.i;
-      return RUN_OK;
-      break;
-
-    default:
-      break;
-    }
-  }
-  return RUN_NG;
-}
-
-static int
-squ_mul(squ_ctx* ctx, squ_array* args, squ_value* ret)
-{
-  assert(args->len == 2);
-
-  squ_value* v1 = args->data[0];
-  squ_value* v2 = args->data[1];
-
-  if(v1->t == SQU_VALUE_INT && v2->t == SQU_VALUE_INT)
-  {
-    ret->v.i = v1->v.i * v2->v.i;
-    return RUN_OK; 
-  }
-
-  if(v1->t == SQU_VALUE_DOUBLE)
-  {
-    switch(v2->t)
-    {
-    case SQU_VALUE_DOUBLE:
-      ret->v.d = v1->v.d * v2->v.d;
-      return RUN_OK;
-      break;
-    
-    case SQU_VALUE_INT:
-      ret->v.d = v1->v.d * (double)v2->v.i;
-      return RUN_OK;
-      break;
-
-    default:
-      break;
-    }
-  }
-  return RUN_NG;
-}
-
-static int
-squ_div(squ_ctx* ctx, squ_array* args, squ_value* ret)
-{
-  assert(args->len == 2);
-
-  squ_value* v1 = args->data[0];
-  squ_value* v2 = args->data[1];
-
-  if(v1->t == SQU_VALUE_INT && v2->t == SQU_VALUE_INT)
-  {
-    ret->v.i = v1->v.i / v2->v.i;
-    return RUN_OK; 
-  }
-
-  if(v1->t == SQU_VALUE_DOUBLE)
-  {
-    switch(v2->t)
-    {
-    case SQU_VALUE_DOUBLE:
-      ret->v.d = v1->v.d / v2->v.d;
-      return RUN_OK;
-      break;
-    
-    case SQU_VALUE_INT:
-      ret->v.d = v1->v.d / (double)v2->v.i;
-      return RUN_OK;
-      break;
-
-    default:
-      break;
-    }
-  }
-  return RUN_NG;
-}
-
-static int
-squ_mod(squ_ctx* ctx, squ_array* args, squ_value* ret)
-{
-  assert(args->len == 2);
-
-  squ_value* v1 = args->data[0];
-  squ_value* v2 = args->data[1];
-
-  assert(v1->t == SQU_VALUE_INT);
-  assert(v2->t == SQU_VALUE_INT);
-
-  ret->v.i = v1->v.i % v2->v.i;
-
-  return RUN_OK; 
-}
-
-static int
-squ_gt(squ_ctx* ctx, squ_array* args, squ_value* ret)
-{
-  assert(args->len == 2);
-
-  squ_value* v1 = args->data[0];
-  squ_value* v2 = args->data[1];
-
-  return RUN_OK; 
-}
-
-static int
-squ_call(squ_ctx* ctx, squ_string name, squ_array* args, squ_value* ret)
-{
-  squ_value* v;
-  int n = squ_var_get(ctx, name, v);
-  if(!n)
-  {
-    switch (v->t)
-    {
-    case SQU_VALUE_CFUNC:
-      return ((squ_cfunc)v->v.p)(ctx, args);
-      break;
-    
-    default:
-      break;
-    }
-  }
-  squ_raise(ctx, "function not found!");
-  return RUN_NG;
 }
 
 squ_value*
@@ -890,6 +704,14 @@ node_expr(squ_ctx* ctx, node* np)
       }
     }
     break;
+  
+  case NODE_PRINT:
+    {
+      node_print* nprint = np->value.v.p;
+      push(node_expr(ctx, nprint->args));
+      print_item();
+    }
+    break;
 
   case NODE_RETURN:
     {
@@ -937,89 +759,11 @@ node_expr(squ_ctx* ctx, node* np)
   return NULL;
 }
 
-squ_value*
-squ_cputs(squ_ctx* ctx, FILE* out, squ_array* args)
-{
-  
-  int i;
-  for (i = 0; i < args->len; i++) 
-  {
-    squ_value* v;
-    if (i != 0)
-      fprintf(out, ", ");
-    v = args->data[i];
-    if (v != NULL) 
-    {
-      switch (v->t) 
-      {
-      case SQU_VALUE_DOUBLE:
-        fprintf(out, "%f\n", v->v.d);
-        break;
-      case SQU_VALUE_STRING:
-        fprintf(out, "%s\n", v->v.s);
-        break;
-      case SQU_VALUE_IDENT:
-        {
-          squ_value* v1 = var_get(ctx,v->v.id);
-          switch(v1->t)
-          {
-            case SQU_VALUE_INT:
-              fprintf(out,"%d\n",v1->v.i);
-              break;
-            case SQU_VALUE_DOUBLE:
-              fprintf(out,"%f\n",v1->v.d);
-              break;
-            case SQU_VALUE_NULL:
-              fprintf(out,"null\n");
-              break;
-            case SQU_VALUE_STRING:
-              fprintf(out,"%s\n",v1->v.s);
-              break;
-            case SQU_VALUE_BOOL:
-              fprintf(out, v1->v.b ? "true\n" : "false\n");
-              break;
-          }
-          break;
-        }
-      case SQU_VALUE_NULL:
-        fprintf(out, "null\n");
-        break;
-      case SQU_VALUE_BOOL:
-        fprintf(out, v->v.b ? "true\n" : "false\n");
-        break;
-      case SQU_VALUE_INT:
-        fprintf(out,"%d\n",v->v.i);
-        break;
-      case SQU_VALUE_ERROR:
-        fprintf(out, "%s\n", v->v.s);
-        break;
-      case SQU_VALUE_CFUNC:
-        fprintf(out,"<%p>\n",v->v.p);
-        break;
-      default:
-        fprintf(out, "<%p>\n", v->v.p);
-        break;
-      }
-    }
-    else
-    {
-      fprintf(out,"null");
-    }
-  }
-  return NULL;
-}
-
-squ_value*
-squ_puts(squ_ctx* ctx, squ_array* args) {
-  return squ_cputs(ctx, stdout, args);
-}
-
 int
 squ_run(parser_state* p)
 {
-  squ_fun_def(p,"cat",squ_puts);
-  squ_fun_def(p,"print",squ_puts);
   node_expr_stmt(&p->ctx, (node*)p->lval);
+  squ_end();
   
   if(lambda != NULL)
   {

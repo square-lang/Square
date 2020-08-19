@@ -146,6 +146,19 @@ node_op_new(char* op, node* lhs, node* rhs)
 }
 
 node*
+node_print_new(node* args)
+{
+  node_print* nprint = malloc(sizeof(node_print*));
+  nprint->args = args;
+
+  node* np = malloc(sizeof(node));
+  np->type = NODE_PRINT;
+  np->value.t = SQU_VALUE_USER;
+  np->value.v.p = nprint;
+  return np;
+}
+
+node*
 node_block_new(node* args, node* stmt_seq)
 {
   node_block* block = malloc(sizeof(node_block));

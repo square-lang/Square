@@ -1,7 +1,8 @@
+# Can't work yet #
 # print number from 1 to 100 #
 i := 1
 loop when i <= 100 {
-    print(i)
+    print i
     # TODO: use inc(i) #
     i := i + 1
 }

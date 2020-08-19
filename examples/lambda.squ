@@ -1,10 +1,10 @@
 x := 1
 (
     lambda x ->
-    if x % 2 == 0 -> {
-        print("This is a even number")
-    }
-    else -> {
-        print("This is odd number")
-    }
+        if x % 2 == 0 -> {
+            print "This is a even number"
+        }
+        else -> {
+            print "This is odd number"
+        }
 ) <= x # Assign values to lambda's parameters #

@@ -9,35 +9,30 @@ Square is a powerful programming language.
 ## How to run
 ```
 $ cd src
-$ make
+$ a.exe ../examples/helloworld.squ
 ```
 ## Examples
+Print "Hello World!" on the screen:
+```
+print "Hello World!"
+```
 A program to check whether it is an even number:  
 ```
 a := 10
 # You can replace "==" with "is" #
 if a % 2 is 0 -> {
-    print("This is a even number")
+    print "This is a even number"
 }
 
 else -> {
-    print("This is a odd number")
+    print "This is a odd number"
 }
 ```
 Result:
 ```
 This is a even number
-```  
-A program to print 1~100 on the screen
 ```
-# print number from 1 to 100 #
-i := 1
-loop when i <= 100 {
-    print(i)
-    # TODO: use inc(i) #
-    i := i + 1
-}
-```
+
 ## Contribution
 Welcome to pull a request!
 ## License

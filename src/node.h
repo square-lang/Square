@@ -2,8 +2,8 @@
 #define _NODE_H_
 #include "square.h"
 
-#define RUN_OK TRUE
-#define RUN_NG FALSE
+#define RUN_OK 0
+#define RUN_NG 1
 
 typedef enum {
   NODE_ARGS,
@@ -24,6 +24,7 @@ typedef enum {
   NODE_OP,
   NODE_CALL,
   NODE_IMPORT,
+  NODE_PRINT,
 } node_type;
 
 typedef struct {
@@ -110,6 +111,13 @@ typedef struct {
   squ_id name;
 } node_import;
 
+typedef struct
+{
+  node_type type;
+  node* args;
+}node_print;
+
+
 extern node* node_value_new(node*);
 extern node* node_array_new();
 extern node* node_array_of(node*);
@@ -137,6 +145,7 @@ extern node* node_null();
 extern node* node_true();
 extern node* node_false();
 extern void node_free(node*);
+extern node* node_print_new(node*);
 
 squ_lambda* lambda;
 

@@ -1,5 +1,6 @@
 #include "square.h"
 #include "node.h"
+#include "squ_gen.h"
 #include <stdio.h>
 
 FILE *yyin, *yyout;
@@ -23,11 +24,11 @@ squ_parse_input(parser_state* p, FILE *f, const char *file_name)
 {
   int n;
 
-  /*yydebug = 1;*/
   yyin = f;
   n = yyparse(p);
+  p->file_name = file_name;
   if (n == 0 && p->nerr == 0) {
-    printf("syntax OK\n");
+    printf("[%s]:  syntax OK\n", p->file_name);
     return 0;
   }
   else{
@@ -99,6 +100,9 @@ node_free(node* np) {
     node_free(((node_fdef*) np->value.v.p)->blk);
     free(np);
     break;
+  case NODE_PRINT:
+    node_free(((node_print*) np->value.v.p)->args);
+    free(np);
   case NODE_LOOP:
     node_free(((node_loop*) np->value.v.p)->cond);
     node_free(((node_loop*) np->value.v.p)->stmt_seq);
@@ -158,7 +162,7 @@ main(int argc, const char** argv)
   }
   else 
   {
-    for (i=1; i<argc; i++) {
+    for (i = 1; i<argc; i++) {
       n += squ_parse_file(&state, argv[i]);
     }
   }

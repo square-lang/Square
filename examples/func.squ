@@ -1,0 +1,4 @@
+func Sayhello() -> {
+    print "Hello"
+}
+Sayhello()

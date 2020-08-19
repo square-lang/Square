@@ -8,4 +8,4 @@ endif
 
 $(TARGET) :
 	mkdir -p "$$(dirname $(TARGET))"
-	$(CC) main.c parse.tab.c squ_run.c node.c -o $(TARGET)
+	$(CC) main.c parse.tab.c squ_run.c node.c vm_stack.c vm_exec.c -o $(TARGET)

@@ -91,7 +91,7 @@ typedef enum
 
 #define MAXTOKENLEN 80
 #define MAXFUNCNAME 50
-#define MAXRESERVED 19
+#define MAXRESERVED 20
 
 /* lexeme of identifier or reserved word */
 char tokenString[MAXTOKENLEN+1];
@@ -213,7 +213,8 @@ static struct
       {"not",keyword_not},
       {"lambda",keyword_lambda},
       {"method",keyword_method},
-      {"self",keyword_self}
+      {"self",keyword_self},
+      {"print", keyword_print}
     };
 
 /* look for existing keyword*/
@@ -396,7 +397,7 @@ TokenType getToken(YYSTYPE* yylval,parser_state* p){
         }
       break;
       case INID:
-        if(!isalpha(c))
+        if(!isalpha(c) && c != "_")
         {
           ungetNextChar();
           save = FALSE;
@@ -615,6 +616,7 @@ static void yywarnning(parser_state* p,const char* s);
         keyword_lambda
         keyword_method
         keyword_self
+        keyword_print
 
 %token
         op_add
@@ -709,6 +711,10 @@ stmt            : keyword_return opt_args
                 | keyword_import identifier
                     {
                       $$ = node_import_new($2);
+                    }
+                | keyword_print primary0
+                    {
+                      $$ = node_print_new($2);
                     }
                 | keyword_break
                     {
