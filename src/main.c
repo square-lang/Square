@@ -1,6 +1,5 @@
 #include "square.h"
 #include "node.h"
-#include "squ_gen.h"
 #include <stdio.h>
 
 FILE *yyin, *yyout;

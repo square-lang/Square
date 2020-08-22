@@ -688,7 +688,7 @@ program         : stmt_seq
 stmt_seq        : stmts opt_terms
                 ;
 
-stmts           :
+stmts           :/* none */
                     {
                       $$ = node_array_new();
                     }
@@ -712,7 +712,7 @@ stmt            : keyword_return opt_args
                     {
                       $$ = node_import_new($2);
                     }
-                | keyword_print primary0
+                | keyword_print expr
                     {
                       $$ = node_print_new($2);
                     }
