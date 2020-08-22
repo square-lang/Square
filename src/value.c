@@ -40,3 +40,13 @@ is_squ_double(squ_value* v1, squ_value* v2)
     }
     return v1->t == SQU_VALUE_DOUBLE && v2->t == SQU_VALUE_DOUBLE;
 }
+
+squ_value*
+squ_cfunc_value(void *p)
+{
+  squ_value* v = (squ_value*)malloc(sizeof(squ_value));
+
+  v->t = SQU_VALUE_CFUNC;
+  v->v.p = p;
+  return v;
+}

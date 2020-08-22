@@ -1,0 +1,11 @@
+#ifndef SQU_MATH_H
+#define SQU_MATH_H
+
+#include "node.h"
+
+squ_value* squ_sin(squ_ctx* ctx, squ_array* args);
+squ_value* squ_cos(squ_ctx* ctx, squ_array* args);
+squ_value* squ_tan(squ_ctx* ctx, squ_array* args);
+void squ_math_init();
+
+#endif /* SQU_MATH_H */

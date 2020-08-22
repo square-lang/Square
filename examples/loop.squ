@@ -2,7 +2,7 @@
 # print number from 1 to 100 #
 i := 1
 loop when i <= 100 {
-    print i
+    println(i)
     # TODO: use inc(i) #
     i := i + 1
 }

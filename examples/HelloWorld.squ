@@ -1,4 +1,4 @@
 # Print Hello World on the screen #
 print "Hello World!"
-# You can also use print #
-print "Hi"
+# You can also use println function #
+println("Hi")
