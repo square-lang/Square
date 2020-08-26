@@ -397,7 +397,7 @@ TokenType getToken(YYSTYPE* yylval,parser_state* p){
         }
       break;
       case INID:
-        if(!isalpha(c) && c != "_")
+        if(!isalpha(c) && c != '_')
         {
           ungetNextChar();
           save = FALSE;
@@ -557,7 +557,6 @@ yylex(YYSTYPE *yylval,parser_state* p)
       expr
       condition
       block
-      grade
       cond
       primary
       primary0
@@ -724,7 +723,6 @@ stmt            : keyword_return opt_args
                     {
                       $$ = $1;
                     }
-                | keyword_goto grade
                 ;
 
 var             : identifier
@@ -961,10 +959,6 @@ args            : expr
                       $$ = $1;
                       node_array_add($1, $3);
                     }
-                ;
-
-grade           : /* none */
-                | '@' identifier
                 ;
 
 primary0        : lit_number

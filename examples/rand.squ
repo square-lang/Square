@@ -1,0 +1,2 @@
+randnum := rand() % 100
+println(randnum)

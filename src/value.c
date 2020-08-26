@@ -50,3 +50,13 @@ squ_cfunc_value(void *p)
   v->v.p = p;
   return v;
 }
+
+squ_value*
+squ_double_value(double d)
+{
+  squ_value* v = (squ_value*)malloc(sizeof(squ_value));
+  
+  v->t = SQU_VALUE_DOUBLE;
+  v->v.d = d;
+  return v;
+}

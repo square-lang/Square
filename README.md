@@ -35,7 +35,12 @@ This is a even number
 
 ## Contribution
 Welcome to pull a request!
+
+## TODO
+* A tiny VM for square!
+
 ## License
 Copyright (c) 2020 Stepfen Shawn
+
 ## The Author
 Square was designed and developed by [Stepfen Shawn](https://github.com/StepfenShawn) in 2020.  

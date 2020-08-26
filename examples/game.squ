@@ -1,0 +1,10 @@
+# Can not work yet #
+randnum := rand() % 100
+num := input("Please input a number: ")
+if randnum is num -> {
+    print "Right!"
+}
+else -> {
+    print "Wrong!"
+    println(randnum)
+}

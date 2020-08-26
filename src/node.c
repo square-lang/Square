@@ -3,6 +3,7 @@
 #include "parse.tab.h"
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 #define SQU_ERROR_RUNTIME 0
 #define SQU_ERROR_RETURN 1
@@ -290,14 +291,14 @@ node_null()
 node*
 node_true()
 {
-  static node nd = { NODE_VALUE, { SQU_VALUE_BOOL, {1} } };
+  static node nd = { NODE_VALUE, { SQU_VALUE_BOOL, {true} } };
   return &nd;
 }
 
 node*
 node_false()
 {
-  static node nd = { NODE_VALUE, { SQU_VALUE_BOOL, {0} } };
+  static node nd = { NODE_VALUE, { SQU_VALUE_BOOL, {false} } };
   return &nd;
 }
 

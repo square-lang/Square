@@ -27,7 +27,7 @@ node_expr_stmt(squ_ctx* ctx, node* np)
 }
 
 void
-squ_var_def(squ_ctx* ctx, squ_string var_name, const squ_value* v)
+squ_var_def(squ_ctx* ctx, squ_string var_name, squ_value* v)
 {
   int ret;
   khiter_t k;
@@ -594,7 +594,7 @@ node_expr(squ_ctx* ctx, node* np)
         int i;
         for (i = 0; i < arr0->len; i++)
           squ_array_add(arr1, node_expr(ctx, arr0->data[i]));
-        ((squ_cfunc) v->v.p)(ctx, arr1);
+        return ((squ_cfunc) v->v.p)(ctx, arr1);
       }
       else if(v->t == SQU_VALUE_USER)
       {
@@ -708,17 +708,11 @@ node_expr(squ_ctx* ctx, node* np)
       khiter_t k;
       v_r = node_expr(ctx, nlet->rhs);
       v_l = node_expr(ctx, nlet->lhs);
-      if(v_l != NULL)
+      if(v_r->t == SQU_VALUE_IDENT)
       {
-        if(v_r->t == SQU_VALUE_IDENT)
-        {
-          squ_var_def(ctx,v_l->v.id, var_get(ctx,v_r->v.id));
-        }
-        else
-        {
-          squ_var_def(ctx,v_l->v.id,v_r);
-        }
+        squ_var_def(ctx,v_l->v.id, var_get(ctx,v_r->v.id));
       }
+      squ_var_def(ctx,v_l->v.id,v_r);
     }
     break;
     
@@ -745,10 +739,7 @@ squ_cputs(squ_ctx* ctx, FILE* out, squ_array* args)
   int i;
   for (i = 0; i < args->len; i++) 
   {
-    squ_value* v;
-    if (i != 0)
-      fprintf(out, ", ");
-    v = args->data[i];
+    squ_value* v = args->data[i];
     if (v != NULL) 
     {
       switch (v->t) 
@@ -821,10 +812,31 @@ squ_output_init(parser_state* p)
   squ_var_def(&p->ctx, "println", squ_cfunc_value(squ_puts));
 }
 
+squ_value*
+squ_input(squ_ctx* ctx, squ_array* args) {
+  static squ_value ret;
+  if(args->len != 0)
+  {
+    squ_value* v = args->data[0];
+    puts(v->v.s);
+  }
+  ret.t = SQU_VALUE_STRING;
+  scanf("%s\n", &(ret.v.s));
+  puts(ret.v.s);
+  return &ret;
+}
+
+static void
+squ_input_init(parser_state* p)
+{
+  squ_var_def(&p->ctx, "input", squ_cfunc_value(squ_input));
+}
+
 int
 squ_run(parser_state* p)
 {
   squ_output_init(p);
+  squ_input_init(p);
   squ_math_init(p);
   node_expr_stmt(&p->ctx, (node*)p->lval);
   squ_end();

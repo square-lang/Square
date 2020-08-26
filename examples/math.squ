@@ -1,3 +1,5 @@
-# Can't work yet #
-a = sin(0)
-println(a)
+println("sin(1): ", sin(1))
+println("sin(0): ", sin(0))
+println("sqrt(25): ", sqrt(25))
+println(PI)
+println(E)
