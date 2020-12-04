@@ -11,4 +11,4 @@ jobs:
 
       - run: |
          cd src/
-         gcc -w main.c node.c parse.tab.c squ_run.c vm_stack.c vm_exec.c value.c squ_math.c
+         gcc -w main.c node.c parse.tab.c squ_run.c vm_stack.c vm_exec.c value.c squ_math.c -lm
