@@ -1,6 +1,7 @@
 # The Square programming language
 
 [![Build status](https://github.com/square-lang/Square/workflows/build/badge.svg)](https://github.com/square-lang/Square/actions)
+[![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/square-lang/Square)
 
 ## What is Square
 
