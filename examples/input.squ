@@ -1,2 +1,2 @@
-a := input("input >> ")
+def a := input("input >> ")
 println(a)

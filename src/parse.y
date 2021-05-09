@@ -205,7 +205,7 @@ static struct
       {"return",keyword_return},
       {"goto",keyword_goto},
       {"block",keyword_block},
-      {"func",keyword_func},
+      {"def",keyword_func},
       {"obj",keyword_obj},
       {"loop",keyword_loop},
       {"when",keyword_when},
@@ -826,6 +826,10 @@ expr            : expr op_add expr
                 | var op_assign expr
                   {
                     $$ = node_let_new($1, $3);
+                  }
+                | keyword_func var op_assign expr
+                  {
+                    $$ = node_let_new($2, $4);
                   }
                 ;
 

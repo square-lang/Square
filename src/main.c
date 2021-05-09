@@ -169,7 +169,8 @@ main(int argc, const char** argv)
   if (n == 0) {
     squ_run(&state);
   }
-
+  
   squ_parse_free(&state);
+  
   return n > 0 ? EXIT_FAILURE : EXIT_SUCCESS;
 }

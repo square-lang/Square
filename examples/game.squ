@@ -1,7 +1,7 @@
 # Can not work yet #
-randnum := rand() % 100
-num := input("Please input a number: ")
-if randnum is num -> {
+def randnam := rand() % 100
+def num := input("Please input a number: ")
+if randnam is num -> {
     print "Right!"
 }
 else -> {

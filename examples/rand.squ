@@ -1,2 +1,2 @@
-randnum := rand() % 100
-println(randnum)
+def randnom := (rand() % 100)
+println(randnom)

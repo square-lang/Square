@@ -98,8 +98,9 @@ node_array_free(node* np)
   int i;
   node_array* arr = np->value.v.p;
   for (i = 0; i < arr->len; i++)
-    node_free(arr->data[i]);
-  free(arr);
+  {
+    node_free(&arr->data[i]);
+  }
   free(np);
 }
 

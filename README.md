@@ -32,7 +32,7 @@ print "Hello World!"
 A program to check whether it is an even number:
 
 ```square
-a := 10
+def a := 10
 # You can replace "==" with "is" #
 if a % 2 is 0 -> {
     print "This is a even number"

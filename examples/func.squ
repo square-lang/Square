@@ -1,4 +1,4 @@
-func Sayhello() -> {
+def Sayhello() -> {
     print "Hello"
 }
 Sayhello()

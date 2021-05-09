@@ -1,5 +1,5 @@
 # print number from 1 to 100 #
-i := 1
+def i := 1
 loop when i <= 100 {
     println(i)
     # TODO: use inc(i) #
