@@ -48,7 +48,7 @@ node_value_new(node* v)
 squ_array*
 squ_array_new() {
   /* TODO: error check */
-  squ_array* arr = (squ_array*)malloc(sizeof(squ_array*));
+  squ_array* arr = (squ_array*)malloc(sizeof(squ_array));
   arr->len = 0;
   arr->max = 0;
   arr->data = NULL;
@@ -150,7 +150,7 @@ node_op_new(char* op, node* lhs, node* rhs)
 node*
 node_print_new(node* args)
 {
-  node_print* nprint = malloc(sizeof(node_print*));
+  node_print* nprint = malloc(sizeof(node_print));
   nprint->args = args;
 
   node* np = malloc(sizeof(node));

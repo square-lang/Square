@@ -231,7 +231,7 @@ static struct
       {"null",keyword_null},
       {"import",keyword_import},
       {"false",keyword_false},
-      {"true",keyword_false},
+      {"true",keyword_true},
       {"break",keyword_break},
       {"return",keyword_return},
       {"goto",keyword_goto},

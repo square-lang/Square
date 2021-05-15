@@ -44,19 +44,17 @@ is_squ_double(squ_value* v1, squ_value* v2)
 squ_value*
 squ_cfunc_value(void *p)
 {
-  squ_value* v = (squ_value*)malloc(sizeof(squ_value));
-
-  v->t = SQU_VALUE_CFUNC;
-  v->v.p = p;
-  return v;
+  squ_value* v_cfunc = malloc(sizeof(squ_value));
+  v_cfunc->t = SQU_VALUE_CFUNC;
+  v_cfunc->v.p = p;
+  return v_cfunc;
 }
 
 squ_value*
 squ_double_value(double d)
 {
-  squ_value* v = (squ_value*)malloc(sizeof(squ_value));
-  
-  v->t = SQU_VALUE_DOUBLE;
-  v->v.d = d;
-  return v;
+  squ_value* v_db = malloc(sizeof(squ_value));
+  v_db->t = SQU_VALUE_DOUBLE;
+  v_db->v.d = d;
+  return v_db;
 }

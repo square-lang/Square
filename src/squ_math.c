@@ -4,6 +4,9 @@
 #include <assert.h>
 #include <stdlib.h>
 
+#define M_PI 3.141593
+#define M_E 2.718282
+
 squ_value*
 squ_sin(squ_ctx* ctx, squ_array* args)
 {

@@ -839,12 +839,6 @@ squ_run(parser_state* p)
   squ_input_init(p);
   squ_math_init(p);
   node_expr_stmt(&p->ctx, (node*)p->lval);
-  /*
-  int i;
-  for (i = 0; i < (sizeof(stack) / sizeof(squ_value*)); i++ ) {
-    free((void*)stack[i]);
-  }
-  */
   
   if(lambda != NULL)
   {
@@ -859,7 +853,7 @@ squ_run(parser_state* p)
     squ_array_add(arr, p->ctx.exc->arg);
     p->ctx.exc = NULL;
   }
-  
+
   return 0;
 }
 
