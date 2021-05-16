@@ -18,7 +18,7 @@ node_expr_stmt(squ_ctx* ctx, node* np)
   squ_value* v = NULL;
   for (i = 0; i < arr->len; i++) {
     if (ctx->exc != NULL) {
-      return NULL;
+      return ctx->exc->arg;
     }
     
     v = node_expr(ctx, arr->data[i]);
@@ -42,14 +42,10 @@ var_get(squ_ctx* ctx, squ_string name)
   return kh_value(ctx->env, k);
 }
 
-static int
-squ_var_get(squ_ctx* ctx, squ_string name, squ_value* v)
+squ_value*
+squ_var_get(squ_ctx* ctx, squ_string name)
 {
-  if(v == var_get(ctx, name))
-  {
-    return RUN_OK;
-  }
-  return RUN_NG;
+  return var_get(ctx, name);
 }
 
 void
@@ -603,13 +599,16 @@ node_expr(squ_ctx* ctx, node* np)
         int i;
         for(i = 0; i < arr0->len; i++)
         {
-          squ_array_add(arr1, node_expr(ctx, arr0->data[i]));
           squ_value* v = node_expr(ctx, arr0->data[i]);
-          squ_var_reset(ctx,lambda->args->value.v.id,v);
+          if (v->t == SQU_VALUE_IDENT)
+            squ_var_reset(ctx, lambda->args->value.v.id, squ_var_get(ctx, v->v.id));
+          else
+            squ_var_reset(ctx, lambda->args->value.v.id, v);
         }
-        node_expr_stmt(ctx,lambda->body);
+        node_expr_stmt(ctx, lambda->body);
+        return &lambda->ret->value;
       }
-      else 
+      else
       {
         squ_raise(ctx, "function not found!");
       }
@@ -645,8 +644,12 @@ node_expr(squ_ctx* ctx, node* np)
           lambda->args_value = (node*)nlambda->args_value;
           squ_value* v = node_expr(ctx,nlambda->args_value);
           squ_var_reset(ctx, lambda->args->value.v.id,v);
-          node_expr_stmt(ctx,nlambda->body);
+          node_expr_stmt(ctx, nlambda->body);
         }
+      }
+      if(nlambda->ret != NULL)
+      {
+        return &nlambda->ret->value;
       }
     }
     break;
@@ -680,6 +683,10 @@ node_expr(squ_ctx* ctx, node* np)
         v.v.p = NULL;
         kh_value(ctx->env,k) = &v;
       }
+      if(nfdef->ret != NULL)
+      {
+        lambda->ret = (node*)nfdef->ret;
+      }
     }
     break;
   
@@ -709,10 +716,9 @@ node_expr(squ_ctx* ctx, node* np)
       v_r = node_expr(ctx, nlet->rhs);
       v_l = node_expr(ctx, nlet->lhs);
       if(v_r->t == SQU_VALUE_IDENT)
-      {
         squ_var_def(ctx,v_l->v.id, var_get(ctx,v_r->v.id));
-      }
-      squ_var_def(ctx,v_l->v.id,v_r);
+      else
+        squ_var_def(ctx,v_l->v.id,v_r);
     }
     break;
     
@@ -844,6 +850,7 @@ squ_run(parser_state* p)
   {
     free(lambda->args);
     free(lambda->body);
+    free(lambda->ret);
     free(lambda);
   }
 

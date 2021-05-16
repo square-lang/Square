@@ -2,3 +2,9 @@ def Sayhello() -> {
     print "Hello"
 }
 Sayhello()
+
+def retHello() -> {
+    def ret := "Hello"
+} % ret
+
+println(retHello())

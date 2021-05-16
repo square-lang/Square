@@ -95,7 +95,7 @@ void squ_raise(squ_ctx*, const char*);
 
 void squ_var_def(squ_ctx* ctx, squ_string var_name,squ_value* v);
 squ_value* var_get(squ_ctx*, squ_string name);
-static int squ_var_get(squ_ctx* ctx, squ_string name,squ_value*);
+squ_value* squ_var_get(squ_ctx* ctx, squ_string name);
 squ_value* squ_cfunc_value(void *p);
 squ_value* squ_double_value(double d);
 

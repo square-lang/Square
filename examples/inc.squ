@@ -1,0 +1,5 @@
+def inc(a) -> {
+    def ret := a + 1
+} % ret
+
+println(inc(1))

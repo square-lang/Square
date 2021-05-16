@@ -191,12 +191,13 @@ node_call_new(node* cond, node* ident, node* args, node* blk)
 }
 
 node*
-node_lambda_new(node* args, node* body, node* args_value)
+node_lambda_new(node* args, node* body, node* args_value, node* ret)
 {
   node_lambda* nlambda = malloc(sizeof(node_lambda));
   nlambda->args = args;
   nlambda->body = body;
   nlambda->args_value = args_value;
+  nlambda->ret = ret;
 
   node* np = malloc(sizeof(node));
   np->type = NODE_LAMBDA;
@@ -206,12 +207,13 @@ node_lambda_new(node* args, node* body, node* args_value)
 }
 
 node*
-node_fdef_new(node* ident, node* args, node* blk)
+node_fdef_new(node* ident, node* args, node* blk, node* ret)
 {
   node_fdef* nfdef = malloc(sizeof(node_fdef));
   nfdef->ident = ident;
   nfdef->args = args;
   nfdef->blk = blk;
+  nfdef->ret = ret;
 
   node* np = malloc(sizeof(node));
   np->type = NODE_FDEF;

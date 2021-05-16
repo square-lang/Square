@@ -86,12 +86,14 @@ typedef struct{
   node* args;
   node* body;
   node* args_value;
+  node* ret;
 }node_lambda;
 
 typedef struct squ_lambda{
   node* body;
   node* args;
   node* args_value;
+  node* ret;
 }squ_lambda;
 
 typedef struct {
@@ -99,6 +101,7 @@ typedef struct {
   node* ident;
   node* args;
   node* blk;
+  node* ret;
 }node_fdef;
 
 typedef struct {
@@ -128,8 +131,8 @@ extern node* node_let_new(node*, node*);
 extern node* node_op_new(char*, node*, node*);
 extern node* node_block_new(node*, node*);
 extern node* node_call_new(node*, node*, node*, node*);
-extern node* node_lambda_new(node*, node*, node*);
-extern node* node_fdef_new(node*, node*, node*);
+extern node* node_lambda_new(node*, node*, node*, node*);
+extern node* node_fdef_new(node*, node*, node*, node*);
 extern node* node_double_new(squ_double);
 extern node* node_int_new(squ_int);
 extern node* node_string_new(squ_string);

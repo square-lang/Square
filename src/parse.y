@@ -1036,9 +1036,13 @@ primary         : primary0
                     {
                       $$ = node_loop_new($5, $3);
                     }
+                | keyword_func identifier op_lp opt_args op_rp op_next op_flp stmt_seq op_frp op_mod identifier
+                    {
+                      $$ = node_fdef_new(node_ident_new($2), $4, $8, node_ident_new($11));
+                    }
                 | keyword_func identifier op_lp opt_args op_rp op_next op_flp stmt_seq op_frp
                     {
-                      $$ = node_fdef_new(node_ident_new($2), $4, $8);
+                      $$ = node_fdef_new(node_ident_new($2), $4, $8, NULL);
                     }
                 | primary '.' identifier op_lp opt_args op_rp opt_block
                     {
@@ -1056,11 +1060,11 @@ primary         : primary0
 
 lambda_stmt     : op_lp keyword_lambda opt_args op_next stmt_seq op_rp 
                     {
-                      $$ = node_lambda_new($3,$5,NULL);
+                      $$ = node_lambda_new($3, $5, NULL, NULL);
                     }
                 | op_lp keyword_lambda opt_args op_next stmt_seq op_rp op_le primary0 
                     {
-                      $$ = node_lambda_new($3,$5,$8);
+                      $$ = node_lambda_new($3, $5, $8, NULL);
                     }
                 ;
 

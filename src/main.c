@@ -97,6 +97,7 @@ node_free(node* np) {
     node_free(((node_fdef*) np->value.v.p)->ident);
     node_free(((node_fdef*) np->value.v.p)->args);
     node_free(((node_fdef*) np->value.v.p)->blk);
+    node_free(((node_fdef*) np->value.v.p)->ret);
     free(np);
     break;
   case NODE_PRINT:
@@ -111,6 +112,7 @@ node_free(node* np) {
     node_free(((node_lambda*)np->value.v.p)->body);
     node_free(((node_lambda*)np->value.v.p)->args);
     node_free(((node_lambda*)np->value.v.p)->args_value);
+    node_free(((node_lambda*)np->value.v.p)->ret);
     free(np);
     break;
   case NODE_RETURN:

@@ -15,7 +15,12 @@ Square is a powerful programming language.
 * Small
 
 ## How to run
-
+Compile:  
+```bash
+cd src
+gcc -w main.c node.c parse.tab.c squ_run.c value.c squ_math.c -lm
+```
+Run with a file:  
 ```bash
 cd src
 $ a.exe ../examples/helloworld.squ
