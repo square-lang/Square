@@ -820,15 +820,16 @@ squ_output_init(parser_state* p)
 
 squ_value*
 squ_input(squ_ctx* ctx, squ_array* args) {
-  static squ_value ret;
+  squ_value ret;
   if(args->len != 0)
   {
     squ_value* v = args->data[0];
     puts(v->v.s);
   }
+  char* str;
+  gets(str);
   ret.t = SQU_VALUE_STRING;
-  scanf("%s\n", &(ret.v.s));
-  puts(ret.v.s);
+  ret.v.s = str;
   return &ret;
 }
 
